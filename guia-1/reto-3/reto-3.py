@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 # LEER LA IMAGEN A COLOR CON OPENCV
-ruta = "reto-3/keukenhof-paises-bajos.webp"
+ruta = "guia-1/reto-3/keukenhof-paises-bajos.webp"
 img_bgr = cv2.imread(ruta, cv2.IMREAD_COLOR)
 
 
@@ -43,7 +43,7 @@ for nombre, (x, y, w, h) in rois.items():
     cv2.putText(img_anotada, etiqueta, (x, ty),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1, cv2.LINE_AA)
 
-cv2.imwrite("reto-3/keukenhof_regiones.png", img_anotada)
+cv2.imwrite("guia-1/reto-3/keukenhof_regiones.png", img_anotada)
 
 
 # MEDIA Y DESVIACIÓN ESTÁNDAR POR CANAL (B, G, R) EN CADA ROI
