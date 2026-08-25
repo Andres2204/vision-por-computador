@@ -60,7 +60,6 @@ fin = time.perf_counter()
 print("\nTiempo total:", fin - inicio, "segundos")
 
 
-"""
 # local opencv & numpy
 import cv2
 import numpy as np
@@ -81,4 +80,4 @@ while True:
         break
 
 cv2.destroyAllWindows()
-"""
+
