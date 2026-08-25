@@ -1,40 +1,64 @@
 import random
 import math
+import time
+
+inicio = time.perf_counter()
 
 matriz = []
 mini = 255
 maxi = 0
-media = 0
+suma = 0
 
-for i in range(0, 1000):
+for i in range(1000):
     matriz.append([])
-    for j in range(0, 1000):
+
+    for j in range(1000):
         rng = random.randint(0, 255)
+
         mini = min(mini, rng)
         maxi = max(maxi, rng)
-        if media != 0: 
-            media = (media + rng)/2
-        else:
-            media = rng
+        suma += rng
+
         matriz[-1].append(rng)
 
 
-print("Dimenciones: " + str(len(matriz)) + "x" + str(len(matriz[0])))
-print("mini: " + str(mini) + " maxi: " + str(maxi) + " media: " + str(media))
+cantidad = 1000 * 1000
 
+media = suma / cantidad
+
+print("Dimensiones:", len(matriz), "x", len(matriz[0]))
+print("Mínimo:", mini)
+print("Máximo:", maxi)
+print("Media:", media)
+
+# Calcular varianza y desviación estándar
 varianza = 0
-for m in matriz:
-    for e in m: 
-        varianza += e**2
+for fila in matriz:
+    for elemento in fila:
+        varianza += (elemento - media) ** 2
 
-varianza /= 1000*1000
-desviacion = math.sqrt(varianza);
-print("desviacion estandar: " + str(desviacion))
+varianza /= cantidad
 
-flatten = sum(matriz, [])
+desviacion = math.sqrt(varianza)
+
+print("Desviación estándar:", desviacion)
+
+
+# Aplanar matriz
+flatten = []
+for fila in matriz:
+    for elemento in fila:
+        flatten.append(elemento)
+
+
+# Guardar archivo
 with open("output.txt", "w") as f:
-    f.write(str(flatten))
-    print("archivo guardado como output.txt")
+    f.write(",".join(map(str, flatten)))
+    print("Archivo guardado como output.txt")
+
+fin = time.perf_counter()
+print("\nTiempo total:", fin - inicio, "segundos")
+
 
 """
 # local opencv & numpy

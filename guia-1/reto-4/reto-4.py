@@ -3,9 +3,8 @@ import numpy as np
 
 cap = cv2.VideoCapture(0)
 
-images = ["camera"]
-for img in images:
-    cv2.namedWindow(img, cv2.WINDOW_NORMAL)
+img = "camera"
+cv2.namedWindow(img, cv2.WINDOW_NORMAL)
 
 colors = {
     "blue": {
@@ -52,16 +51,15 @@ while loop:
     
 
     # show images
-    cv2.imshow(images[0], frame)
+    cv2.imshow(img, frame)
 
     # check views
     key = cv2.waitKey(10) & 0xFF
     if key == 27 or key == ord('q'):
         loop = False
 
-    for img in images:
-        if cv2.getWindowProperty(images[0], cv2.WND_PROP_VISIBLE) < 1:
-            loop = False
+    if cv2.getWindowProperty(img, cv2.WND_PROP_VISIBLE) < 1:
+        loop = False
 
 
 cap.release()
