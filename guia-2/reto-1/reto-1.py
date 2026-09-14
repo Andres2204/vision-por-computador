@@ -10,10 +10,10 @@ import matplotlib.pyplot as plt
 #sklearn
 import sklearn as sk
 from sklearn.datasets import load_iris
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, label_binarize
 
 # Models
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
@@ -21,7 +21,6 @@ from sklearn.ensemble import RandomForestClassifier
 # Metrics
 from sklearn.metrics import accuracy_score, classification_report
 from sklearn.metrics import ConfusionMatrixDisplay
-
 
 iris = load_iris()
 iris_features = pd.DataFrame(data=iris.data, columns=iris.feature_names)
@@ -64,29 +63,47 @@ models = {
         random_state=42
     )
 }
-
 print()
+results = {}
 for name, model in models.items():
     print("<-----", name, "----->")
     model.fit(X_train, y_train)
     prediction = model.predict(X_test)
+    prob = model.predict_proba(X_test)
 
     # Accuracy
     accuracy = accuracy_score(y_test, prediction)
     print("Accuracy:", accuracy)
+    results[name] = { "model": model, "pred": prediction, "accuracy": accuracy }
 
     # Reporte
     print("Classification report:")
-    print( classification_report( y_test, prediction, target_names=iris.target_names))
+    print(classification_report( y_test, prediction, target_names=iris.target_names))
 
     # Matriz de confusión
     ConfusionMatrixDisplay.from_predictions(y_test, prediction, display_labels=iris.target_names)
     plt.title(f"Matriz de confusión - {name}")
     plt.show()
 
+# Validacion
+cv_results = {}
+print("\nCross Validation")
+for name, model in models.items():
+    scores = cross_val_score(model, X, y, cv=5, scoring="accuracy")
+    cv_results[name] = scores
+    print(f"{name}: {scores.mean():.4f} +/- {scores.std():.4f}")
 
-#iris_labels = pd.DataFrame(data=iris.target, columns=['target']) # y
-#iris_df = pd.concat([iris_features, iris_labels], axis=1)
-#iris_df['species'] = iris_df['target'].map(lambda x: iris.target_names[x])
-#sns.FacetGrid(iris_df, hue='species').map(plt.scatter, 'petal length (cm)', 'petal width (cm)').add_legend()
-#plt.show()
+print("\n<----- Comparacion de modelos ----->")
+for name, result in results.items():
+    print(f"{name}: Accuracy = {result['accuracy']:.4f}")
+
+print("\nMejor modelo según Accuracy:")
+best_model = max( results, key=lambda name: results[name]["accuracy"] )
+print( best_model, "con Accuracy =", f"{results[best_model]['accuracy']:.4f}" )
+
+iris_labels = pd.DataFrame( data=iris.target, columns=['target'] )
+iris_df = pd.concat( [iris_features, iris_labels], axis=1 )
+iris_df['species'] = iris_df['target'].map( lambda x: iris.target_names[x] )
+sns.FacetGrid( iris_df, hue='species' ).map( plt.scatter, 'petal length (cm)', 'petal width (cm)' ).add_legend()
+plt.title("Dataset Iris") 
+plt.show()
