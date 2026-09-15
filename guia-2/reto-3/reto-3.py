@@ -112,7 +112,8 @@ param_grid = {
     ],
     'activation': ['identity', 'logistic', 'tanh', 'relu'],
     'solver': ['lbfgs', 'sgd', 'adam'],
-    'learning_rate': ['constant', 'invscaling', 'adaptive']
+    'learning_rate': ['constant', 'invscaling', 'adaptive'],
+    'max_iter': [25, 50, 100, 200]
 }
 
 # busqueda de los mejores hiper parametros con gridsearch
