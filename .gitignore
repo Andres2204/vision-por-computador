@@ -1,2 +1,4 @@
-/venv
+/.venv
 /guia-2/reto-6/Dataset500/
+/.venv311
+logs.log
