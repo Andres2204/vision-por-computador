@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 import seaborn as sns
+import warnings
+warnings.filterwarnings('ignore')
 
 import matplotlib
 matplotlib.use('qtagg')
@@ -21,13 +23,13 @@ iris_features = pd.DataFrame(data=iris.data, columns=iris.feature_names)
 X = iris_features.copy()
 y = iris.target
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=327, stratify=y) # 328 bayes_accuracy = 1, doble perfect = 356
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=386, stratify=y) # 328 bayes_accuracy = 1, doble perfect = 356
 
 # Creating a support vector classifier
 #model = svm.SVC(probability=True)
 param_grid = {
     "C": [0.01, 0.1, 1.0, 10.0, 100.0],
-    "kernel": ["rbf", "poly", "linaar", "sigmoid"],
+    "kernel": ["rbf", "poly", "linear", "sigmoid"],
     "gamma": ["scale", "auto", 0.01, 0.1, 1.0, 10.0]
 }
 #grid = GridSearchCV(model, param_grid)
