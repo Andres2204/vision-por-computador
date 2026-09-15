@@ -8,12 +8,16 @@ import matplotlib
 matplotlib.use('qtagg')
 import matplotlib.pyplot as plt
 
+#sklearn
 import sklearn as sk
 from sklearn.datasets import load_iris
+from sklearn.preprocessing import LabelEncoder, label_binarize
 
+# Models
 from sklearn import svm
 from sklearn.naive_bayes import GaussianNB
 
+# Metrics
 from sklearn.model_selection import GridSearchCV, train_test_split, cross_val_score
 from sklearn.metrics import accuracy_score, classification_report, ConfusionMatrixDisplay
 
@@ -21,25 +25,32 @@ from sklearn.metrics import accuracy_score, classification_report, ConfusionMatr
 iris = load_iris()
 iris_features = pd.DataFrame(data=iris.data, columns=iris.feature_names)
 X = iris_features.copy()
+
+print("<----- Dataset Iris ----->")
+print("Características:", X.shape)
+print("Clases:", iris.target_names)
+
+for i, name in enumerate(iris.target_names):
+    print(f"\t{i}: {name}")
+
+# Identificar los tipos de datos 0, 1, 2 con nombres legibles
+label_encoder = LabelEncoder()
+encode = label_encoder.fit_transform(iris.target_names)
+print("Label Encoder:")
+for e in encode:
+    print('\tClase', e, ':' , label_encoder.inverse_transform([e]))
+
 y = iris.target
-
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=387, stratify=y) # 328 bayes_accuracy = 1, doble perfect = 356, 387
+print("\nTrain y Test:")
+print('\tX_train: ', X_train.shape, ' X_test: ', X_test.shape) 
+print('\ty_test: ', y_test.shape, ' y_train: ', y_train.shape)
 
-# Creating a support vector classifier
-#model = svm.SVC(probability=True)
 param_grid = {
     "C": [0.01, 0.1, 1.0, 10.0, 100.0],
     "kernel": ["rbf", "poly", "linear", "sigmoid"],
     "gamma": ["scale", "auto", 0.01, 0.1, 1.0, 10.0]
 }
-#grid = GridSearchCV(model, param_grid)
-#grid.fit(X_train, y_train)
-#y_pred = grid.predict(X_test)
-#
-#accuracy = accuracy_score(y_pred, y_test)
-#print(f"The model is {accuracy*100}% accurate")
-#print(classification_report(y_test, y_pred, target_names=iris.target_names))
-#
 
 models = {
     "Naive Bayes": GaussianNB(var_smoothing=2e-9),
