@@ -1,70 +1,52 @@
+import pandas as pd
 import numpy as np
 import seaborn as sns
-import pandas as pd
-import random
 
 import matplotlib
-matplotlib.use('qtagg') # requerido en wayland junto con pyqt6
+matplotlib.use('qtagg')
 import matplotlib.pyplot as plt
 
-#sklearn
 import sklearn as sk
 from sklearn.datasets import load_iris
-from sklearn.preprocessing import LabelEncoder, label_binarize
 
-# Models
-from sklearn.model_selection import train_test_split, cross_val_score
-from sklearn.linear_model import LogisticRegression
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier
+from sklearn import svm
+from sklearn.naive_bayes import GaussianNB
 
-# Metrics
-from sklearn.metrics import accuracy_score, classification_report
-from sklearn.metrics import ConfusionMatrixDisplay
+from sklearn.model_selection import GridSearchCV, train_test_split, cross_val_score
+from sklearn.metrics import accuracy_score, classification_report, ConfusionMatrixDisplay
+
 
 iris = load_iris()
 iris_features = pd.DataFrame(data=iris.data, columns=iris.feature_names)
-X = iris_features.copy() # X mayuscula por ser una MATRIZ de datos
+X = iris_features.copy()
+y = iris.target
 
-print("<----- Dataset Iris ----->")
-print("Características:", X.shape)
-print("Clases:", iris.target_names)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=327, stratify=y) # 328 bayes_accuracy = 1, doble perfect = 356
 
-for i, name in enumerate(iris.target_names):
-    print(f"\t{i}: {name}")
-
-# Identificar los tipos de datos 0, 1, 2 con nombres legibles
-label_encoder = LabelEncoder()
-encode = label_encoder.fit_transform(iris.target_names)
-print("Label Encoder:")
-for e in encode:
-    print('\tClase', e, ':' , label_encoder.inverse_transform([e]))
-
-# Separar datos de entrenamiento y prueba
-y = iris.target # y minuscula por se un vector unidimencional (resultados)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=202, stratify=y)
-print("\nTrain y Test:")
-print('\tX_train: ', X_train.shape, ' X_test: ', X_test.shape) 
-print('\ty_test: ', y_test.shape, ' y_train: ', y_train.shape)
+# Creating a support vector classifier
+#model = svm.SVC(probability=True)
+param_grid = {
+    "C": [0.01, 0.1, 1.0, 10.0, 100.0],
+    "kernel": ["rbf", "poly", "linaar", "sigmoid"],
+    "gamma": ["scale", "auto", 0.01, 0.1, 1.0, 10.0]
+}
+#grid = GridSearchCV(model, param_grid)
+#grid.fit(X_train, y_train)
+#y_pred = grid.predict(X_test)
+#
+#accuracy = accuracy_score(y_pred, y_test)
+#print(f"The model is {accuracy*100}% accurate")
+#print(classification_report(y_test, y_pred, target_names=iris.target_names))
+#
 
 models = {
-    "Logistic Regression": LogisticRegression(
-        max_iter=200
-    ),
-    "Decision Tree": DecisionTreeClassifier(
-        criterion='gini',
-        max_depth=3,
-        min_samples_split=4,
-        random_state=42
-    ),
-    "Random Forest": RandomForestClassifier(
-        n_estimators=100,
-        max_depth=3,
-        random_state=42
-    )
+    "Naive Bayes": GaussianNB(var_smoothing=2e-9),
+    "SVC": GridSearchCV(svm.SVC(probability=True), param_grid)
 }
+
 print()
 results = {}
+flag = False
 for name, model in models.items():
     print("<-----", name, "----->")
     model.fit(X_train, y_train)
@@ -87,7 +69,7 @@ for name, model in models.items():
 
 # Validacion
 cv_results = {}
-print("\nCross Validation")
+print("\n Cross Validation")
 for name, model in models.items():
     scores = cross_val_score(model, X, y, cv=5, scoring="accuracy")
     cv_results[name] = scores
@@ -107,3 +89,12 @@ iris_df['species'] = iris_df['target'].map( lambda x: iris.target_names[x] )
 sns.FacetGrid( iris_df, hue='species' ).map( plt.scatter, 'petal length (cm)', 'petal width (cm)' ).add_legend()
 plt.title("Dataset Iris") 
 plt.show()
+
+
+"""
+- Realizar su implementación del clasificador de flores usando Bayes y máquinas de soporte vectorial.
+- Mejorar entendiendo los hiperparámetros y modificándolos para mejorar los resultados
+- Validar usando las estrategias vistas.
+- Analizar resultados y obtener algunas conclusiones (redactar)
+- Guardar evidencia de dicha implementación en un documento. Sustentar los cambios realizados en el modelo. Es importante la fundamentación matemática.
+"""
