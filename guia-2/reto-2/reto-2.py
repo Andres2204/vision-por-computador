@@ -23,7 +23,7 @@ iris_features = pd.DataFrame(data=iris.data, columns=iris.feature_names)
 X = iris_features.copy()
 y = iris.target
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=386, stratify=y) # 328 bayes_accuracy = 1, doble perfect = 356
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=387, stratify=y) # 328 bayes_accuracy = 1, doble perfect = 356, 387
 
 # Creating a support vector classifier
 #model = svm.SVC(probability=True)

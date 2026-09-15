@@ -54,8 +54,6 @@ models = {
     "Logistic Regression": LogisticRegression(
         max_iter=200,
         C=50,
-        solver='lbfgs',
-        penalty='l2'
     ),
     "Decision Tree": DecisionTreeClassifier(
         criterion='gini',
@@ -75,7 +73,6 @@ for name, model in models.items():
     print("<-----", name, "----->")
     model.fit(X_train, y_train)
     prediction = model.predict(X_test)
-    prob = model.predict_proba(X_test)
 
     # Accuracy
     accuracy = accuracy_score(y_test, prediction)
