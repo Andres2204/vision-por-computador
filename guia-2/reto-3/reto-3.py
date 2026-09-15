@@ -22,7 +22,6 @@ warnings.filterwarnings('ignore')
 iris = load_iris()
 iris_features = pd.DataFrame(data=iris.data, columns=iris.feature_names)
 X = iris_features.copy() # X mayuscula por ser una MATRIZ de datos
-print(X)
 
 print("<----- Dataset Iris ----->")
 print("Características:", X.shape)
