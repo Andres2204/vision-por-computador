@@ -2,6 +2,8 @@ import numpy as np
 import seaborn as sns
 import pandas as pd
 import random
+import warnings
+warnings.filterwarnings('ignore')
 
 import matplotlib
 matplotlib.use('qtagg') # requerido en wayland junto con pyqt6
@@ -21,6 +23,7 @@ from sklearn.ensemble import RandomForestClassifier
 # Metrics
 from sklearn.metrics import accuracy_score, classification_report
 from sklearn.metrics import ConfusionMatrixDisplay
+
 
 iris = load_iris()
 iris_features = pd.DataFrame(data=iris.data, columns=iris.feature_names)
@@ -49,7 +52,10 @@ print('\ty_test: ', y_test.shape, ' y_train: ', y_train.shape)
 
 models = {
     "Logistic Regression": LogisticRegression(
-        max_iter=200
+        max_iter=200,
+        C=50,
+        solver='lbfgs',
+        penalty='l2'
     ),
     "Decision Tree": DecisionTreeClassifier(
         criterion='gini',

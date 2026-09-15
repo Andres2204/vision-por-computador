@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 import seaborn as sns
+import warnings
+warnings.filterwarnings('ignore')
 
 import matplotlib
 matplotlib.use('qtagg')
