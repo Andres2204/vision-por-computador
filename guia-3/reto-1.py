@@ -4,7 +4,7 @@ import cv2
 import xml.etree.ElementTree as ET
 import numpy as np
 
-dataset_base_path = os.path.join(os.path.expanduser('~') ,"Downloads/MASATI-v2")
+dataset_base_path = "MASATI-v2"
 masati_content = os.listdir(dataset_base_path)
 with_labels = {}
 
