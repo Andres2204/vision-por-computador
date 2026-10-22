@@ -120,3 +120,4 @@ QT_QPA_PLATFORM=xcb python guia-1/reto-4/reto-4.py
 - En Linux con entorno "externally managed" (PEP 668) no se puede instalar
   paquetes a nivel de sistema con `pip`; por eso el uso de `venv` es el
   procedimiento recomendado.
+
