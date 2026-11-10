@@ -2,7 +2,7 @@
 /guia-2/reto-6/Dataset500/
 /.venv311
 logs.log
-/guia-2/reto-5/3scenes/
+/**/3scenes/
 sam_b.pt
 /**/.ipynb_checkpoints
 /**/retos
