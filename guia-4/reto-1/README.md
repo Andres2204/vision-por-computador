@@ -9,6 +9,7 @@ las mismas métricas:
 |---|---|---|---|
 | CNN | CNN base (réplica del cuaderno del profesor, 8-16-32) | `ScenesCNN.ipynb` | `resultados/cnn/base/` |
 | CNN | CNN mejorada (32-64-128, dos convoluciones por bloque, BN + Dropout + GAP + Dense(128) + augmentación) | `ScenesCNN.ipynb` | `resultados/cnn/mejorada/` |
+| CNN | CNN mejorada v2 (segunda iteración: augmentación suave, lr 3e-4, `label_smoothing` y early stopping sobre `val_loss`) | `ScenesCNN.ipynb` | `resultados/cnn/mejorada_v2/` |
 | DL no secuencial | DenseNet121 preentrenada en ImageNet + fine-tuning en dos fases | `ScenesDenseNet.ipynb` | `resultados/densenet/` (+ `gradcam.png`) |
 | IA generativa | Swin Transformer entrenado desde cero (ventanas locales y desplazadas) | `ScenesSWIN.ipynb` | `resultados/swin/` |
 | Machine learning | Regresión logística (HSV+HOG, escalada) | `ScenesClassicML.ipynb` | `resultados/ml/logreg/` |
@@ -28,7 +29,7 @@ ImageNet, de modo que la comparación con DenseNet121 separa *arquitectura*
 El Swin es el modelo **más difícil de los cuatro de entrenar** con este
 dataset: un Transformer no trae los sesgos inductivos de las convoluciones
 (localidad, compartición de pesos) y tiene que aprenderlos de los datos, pero
-solo hay ~612 imágenes de train. La augmentación, el `weight_decay` de AdamW y
+solo hay ~610 imágenes de train. La augmentación, el `weight_decay` de AdamW y
 el early stopping son imprescindibles y, aun así, cabe esperar que quede por
 detrás de la DenseNet121 preentrenada: el hueco entre ambos mezcla
 arquitectura y preentrenamiento, y `reto-1.ipynb` lo descompone con el
@@ -55,7 +56,7 @@ se recarga reconstruyendo la arquitectura.
 ## Protocolo
 
 * Split común: 25 % test y, del 75 % restante, un 15 % para validación
-  (semilla 20 → ≈ 612 train / 108 validación / 241 test; se guarda en
+  (semilla 20 → ≈ 610 train / 108 validación / 240 test; se guarda en
   `resultados/split.json`). Todos los modelos
   evalúan exactamente el mismo `test_idx` (~240 imágenes); ningún cuaderno
   vuelve a hacer `train_test_split`.
@@ -104,6 +105,7 @@ resultados/
 |---|---|---|---|---|
 | CNN base | 90.42 % | 90.12 % | 30 611 | 6.5 s |
 | CNN mejorada | 87.08 % | 86.08 % | 305 251 | 482 s |
+| CNN mejorada v2 | pendiente de entrenar | pendiente de entrenar | 305 251 | pendiente de entrenar |
 | DenseNet121 | 98.33 % | 98.36 % | 7 040 579 (818 179 entrenables) | 128 s |
 | Swin Transformer | pendiente de entrenar | pendiente de entrenar | pendiente de entrenar | pendiente de entrenar |
 | Regresión logística | 94.17 % | 93.91 % | n/d | 0.46 s |
@@ -121,6 +123,21 @@ del ruido). La tabla completa está en
 El Swin Transformer (`ScenesSWIN.ipynb`) todavía no se ha entrenado: su
 cuaderno y su sección de comparación están integrados, y `reto-1.ipynb` lo
 incorporará a la tabla en cuanto exista `resultados/swin/`.
+
+La CNN mejorada se entrenó **dos veces**, y eso es parte del resultado. La
+primera versión (v1, 87.08 %) quedó 3.3 puntos por debajo de la base: su
+`history.csv` muestra el `val_accuracy` clavado en 0.3796 durante las primeras
+13 épocas con el `val_loss` subiendo hasta 2.8, y el entrenamiento se cortó en
+la época 40 cuando la validación todavía venía mejorando. Diagnóstico:
+augmentación demasiado agresiva para 610 imágenes, `lr = 1e-3` con
+`BatchNormalization` y `EarlyStopping` sobre una `val_accuracy` ruidosa (108
+imágenes). La **v2** (`resultados/cnn/mejorada_v2/`) cambia solo el régimen de
+entrenamiento —augmentación a flip + rotación 0.05, `lr = 3e-4`,
+`label_smoothing = 0.05` en la función de costo y paciencia 20 sobre
+`val_loss`— y deja intacta
+la arquitectura: es la evidencia experimental del bullet «ajustar los
+hiperparámetros o la función de costo» del enunciado. La v1 se conserva como
+evidencia de la iteración.
 
 ## Notas técnicas
 
