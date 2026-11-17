@@ -107,22 +107,21 @@ resultados/
 | CNN mejorada | 87.08 % | 86.08 % | 305 251 | 482 s |
 | CNN mejorada v2 | pendiente de entrenar | pendiente de entrenar | 305 251 | pendiente de entrenar |
 | DenseNet121 | 98.33 % | 98.36 % | 7 040 579 (818 179 entrenables) | 128 s |
-| Swin Transformer | pendiente de entrenar | pendiente de entrenar | pendiente de entrenar | pendiente de entrenar |
+| Swin Transformer | 83.33 % | 82.81 % | 5 133 871 | 118 s |
 | Regresión logística | 94.17 % | 93.91 % | n/d | 0.46 s |
 | SVM (RBF) | 95.42 % | 95.26 % | n/d | 0.37 s |
 | Random Forest | 93.33 % | 93.00 % | n/d | 1.59 s |
 
-Resultados obtenidos el 17/11/2026 ejecutando los cuadernos con el entorno
-`.venv` del repositorio (240 imágenes de test, las mismas para todos).
-DenseNet121 gana con un IC 95 % de 96.67–99.58 %. McNemar: DenseNet121 vs
-CNN base p = 0.0001 y vs CNN mejorada p < 0.0001 (diferencias significativas);
-CNN base vs CNN mejorada p = 0.2005 y SVM vs DenseNet121 p = 0.0654 (dentro
-del ruido). La tabla completa está en
+Resultados obtenidos el 17/11/2026 ejecutando los cuadernos con el
+entorno `.venv` del repositorio (240 imágenes de test, las mismas para todos).
+DenseNet121 gana con un IC 95 % de 96.67–99.58 %. McNemar: DenseNet121 vs CNN
+base p = 0.0001, vs CNN mejorada p < 0.0001 y vs Swin p < 0.0001 (diferencias
+significativas); CNN base vs CNN mejorada p = 0.2005, CNN mejorada vs Swin
+p = 0.1996 y SVM vs DenseNet121 p = 0.0654 (dentro del ruido). El Swin
+entrenado desde cero (83.33 %) queda por debajo de la CNN mejorada (87.08 %),
+aunque esa diferencia no es significativa; el hueco de 15 puntos con
+DenseNet121 sí lo es. La tabla completa está en
 `resultados/comparacion/model_summary.csv`.
-
-El Swin Transformer (`ScenesSWIN.ipynb`) todavía no se ha entrenado: su
-cuaderno y su sección de comparación están integrados, y `reto-1.ipynb` lo
-incorporará a la tabla en cuanto exista `resultados/swin/`.
 
 La CNN mejorada se entrenó **dos veces**, y eso es parte del resultado. La
 primera versión (v1, 87.08 %) quedó 3.3 puntos por debajo de la base: su
@@ -176,8 +175,8 @@ Están instalados en el entorno `venv` del repositorio.
 ## Reproducción
 
 Desde esta carpeta y con el entorno virtual del repositorio (primera
-ejecución: entrena los siete modelos; siguientes ejecuciones: cargan los
-artefactos guardados):
+ejecución: entrena todos los modelos (incluida la variante v2 de la CNN);
+siguientes ejecuciones: cargan los artefactos guardados):
 
 ```bash
 ../../.venv/bin/jupyter nbconvert --to notebook --execute --inplace ScenesCNN.ipynb
