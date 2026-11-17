@@ -17,6 +17,10 @@ las mismas métricas:
 | Machine learning | Random Forest (300 árboles) | `ScenesClassicML.ipynb` | `resultados/ml/rf/` |
 | Comparación | Tabla resumen, 4 figuras, McNemar y conclusiones | `reto-1.ipynb` | `resultados/comparacion/` |
 
+El informe listo para enviar está en `informe-reto-1.pdf` (6 páginas): resumen,
+protocolo, tabla de los 8 modelos, McNemar, las 4 figuras y conclusiones. Se
+genera a partir de `resultados/`.
+
 La arquitectura **no secuencial** que pide el enunciado es `DenseNet121`
 preentrenada en ImageNet con fine-tuning en dos fases (base congelada y
 descongelación de las últimas 40 capas manteniendo las `BatchNormalization`
@@ -105,7 +109,7 @@ resultados/
 |---|---|---|---|---|
 | CNN base | 90.42 % | 90.12 % | 30 611 | 6.5 s |
 | CNN mejorada | 87.08 % | 86.08 % | 305 251 | 482 s |
-| CNN mejorada v2 | pendiente de entrenar | pendiente de entrenar | 305 251 | pendiente de entrenar |
+| CNN mejorada v2 | 89.17 % | 88.50 % | 305 251 | 963 s |
 | DenseNet121 | 98.33 % | 98.36 % | 7 040 579 (818 179 entrenables) | 128 s |
 | Swin Transformer | 83.33 % | 82.81 % | 5 133 871 | 118 s |
 | Regresión logística | 94.17 % | 93.91 % | n/d | 0.46 s |
@@ -115,12 +119,14 @@ resultados/
 Resultados obtenidos el 17/11/2026 ejecutando los cuadernos con el
 entorno `.venv` del repositorio (240 imágenes de test, las mismas para todos).
 DenseNet121 gana con un IC 95 % de 96.67–99.58 %. McNemar: DenseNet121 vs CNN
-base p = 0.0001, vs CNN mejorada p < 0.0001 y vs Swin p < 0.0001 (diferencias
-significativas); CNN base vs CNN mejorada p = 0.2005, CNN mejorada vs Swin
-p = 0.1996 y SVM vs DenseNet121 p = 0.0654 (dentro del ruido). El Swin
-entrenado desde cero (83.33 %) queda por debajo de la CNN mejorada (87.08 %),
-aunque esa diferencia no es significativa; el hueco de 15 puntos con
-DenseNet121 sí lo es. La tabla completa está en
+base p = 0.0001, vs CNN mejorada p < 0.0001, vs CNN mejorada v2 p < 0.0001 y
+vs Swin p < 0.0001 (diferencias significativas); CNN base vs CNN mejorada
+p = 0.2005, CNN mejorada v2 vs base p = 0.7011, v2 vs v1 p = 0.2668, v2 vs Swin
+p = 0.0243 y SVM vs DenseNet121 p = 0.0654. La v2 sube a 89.17 %: +2.1 puntos
+sobre la v1 y −1.2 respecto a la base (ninguna de las dos diferencias es
+significativa). El Swin desde cero (83.33 %) queda por debajo de la v2
+(89.17 %) y esa diferencia sí es significativa (p = 0.0243); el hueco de 15
+puntos con DenseNet121 también. La tabla completa está en
 `resultados/comparacion/model_summary.csv`.
 
 La CNN mejorada se entrenó **dos veces**, y eso es parte del resultado. La
@@ -135,8 +141,10 @@ entrenamiento —augmentación a flip + rotación 0.05, `lr = 3e-4`,
 `label_smoothing = 0.05` en la función de costo y paciencia 20 sobre
 `val_loss`— y deja intacta
 la arquitectura: es la evidencia experimental del bullet «ajustar los
-hiperparámetros o la función de costo» del enunciado. La v1 se conserva como
-evidencia de la iteración.
+hiperparámetros o la función de costo» del enunciado. El resultado es 89.17 %
+(+2.1 puntos sobre la v1), todavía 1.2 puntos por debajo de la base; McNemar
+no separa ninguna de las dos diferencias (p = 0.2668 y p = 0.7011). La v1 se
+conserva como evidencia de la iteración.
 
 ## Notas técnicas
 
