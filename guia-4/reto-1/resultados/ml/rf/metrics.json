@@ -1,0 +1,65 @@
+{
+  "name": "Random Forest",
+  "family": "machine learning",
+  "classes": [
+    "coast",
+    "forest",
+    "highway"
+  ],
+  "n_test": 240,
+  "accuracy": 0.9333333333333333,
+  "precision_macro": 0.93550241008528,
+  "recall_macro": 0.9275599128540305,
+  "f1_macro": 0.9300003166057706,
+  "f1_weighted": 0.9322625911420441,
+  "cohen_kappa": 0.898989898989899,
+  "confusion_matrix": [
+    [
+      85,
+      2,
+      3
+    ],
+    [
+      0,
+      82,
+      0
+    ],
+    [
+      8,
+      3,
+      57
+    ]
+  ],
+  "per_class": {
+    "coast": {
+      "precision": 0.9139784946236559,
+      "recall": 0.9444444444444444,
+      "f1": 0.9289617486338798,
+      "support": 90
+    },
+    "forest": {
+      "precision": 0.9425287356321839,
+      "recall": 1.0,
+      "f1": 0.9704142011834319,
+      "support": 82
+    },
+    "highway": {
+      "precision": 0.95,
+      "recall": 0.8382352941176471,
+      "f1": 0.890625,
+      "support": 68
+    }
+  },
+  "parameters": null,
+  "trainable_parameters": null,
+  "training_seconds": 1.59,
+  "inference_ms_per_image": 0.094,
+  "epochs": null,
+  "hyperparameters": {
+    "descriptor": "HSV histogram [8,8,8] + HOG(9, (16,16), (2,2))",
+    "classifier": "RandomForestClassifier",
+    "n_estimators": 300
+  },
+  "notes": "Random forest of 300 trees on HSV+HOG descriptors.",
+  "roc_auc_ovr_macro": 0.98744888928913
+}

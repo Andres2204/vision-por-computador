@@ -8,7 +8,7 @@ las mismas métricas:
 | Grupo | Modelo | Cuaderno | Resultados |
 |---|---|---|---|
 | CNN | CNN base (réplica del cuaderno del profesor, 8-16-32) | `ScenesCNN.ipynb` | `resultados/cnn/base/` |
-| CNN | CNN mejorada (32-64-128 + BN + Dropout + GAP + augmentación) | `ScenesCNN.ipynb` | `resultados/cnn/mejorada/` |
+| CNN | CNN mejorada (32-64-128, dos convoluciones por bloque, BN + Dropout + GAP + Dense(128) + augmentación) | `ScenesCNN.ipynb` | `resultados/cnn/mejorada/` |
 | DL no secuencial | DenseNet121 preentrenada en ImageNet + fine-tuning en dos fases | `ScenesDenseNet.ipynb` | `resultados/densenet/` (+ `gradcam.png`) |
 | IA generativa | Swin Transformer entrenado desde cero (ventanas locales y desplazadas) | `ScenesSWIN.ipynb` | `resultados/swin/` |
 | Machine learning | Regresión logística (HSV+HOG, escalada) | `ScenesClassicML.ipynb` | `resultados/ml/logreg/` |
@@ -38,8 +38,10 @@ se recarga reconstruyendo la arquitectura.
 
 ## Dataset
 
-* 961 imágenes JPG: `coast/` (361), `forest/` (329) y `highway/` (271), es
-  decir, un reparto aproximado de 38/34/28 % (dataset desbalanceado).
+* 958 imágenes JPG utilizables: `coast/` (360), `forest/` (328) y
+  `highway/` (270), es decir, un reparto aproximado de 38/34/28 % (dataset
+  desbalanceado). Cada carpeta incluye además un `desktop.ini` que no se
+  carga.
 * Ubicación esperada (en este orden; `common_3scenes.py` usa la primera que
   exista): `3scenes/` junto a este módulo, o
   `../../guia-2/reto-5/3scenes/` (la ubicación real del repo).
@@ -100,18 +102,25 @@ resultados/
 
 | Modelo | Accuracy | F1 macro | Parámetros | Entrenamiento |
 |---|---|---|---|---|
-| CNN base | pendiente de entrenar | pendiente de entrenar | pendiente de entrenar | pendiente de entrenar |
-| CNN mejorada | pendiente de entrenar | pendiente de entrenar | pendiente de entrenar | pendiente de entrenar |
-| DenseNet121 | pendiente de entrenar | pendiente de entrenar | pendiente de entrenar | pendiente de entrenar |
+| CNN base | 90.42 % | 90.12 % | 30 611 | 6.5 s |
+| CNN mejorada | 87.08 % | 86.08 % | 305 251 | 482 s |
+| DenseNet121 | 98.33 % | 98.36 % | 7 040 579 (818 179 entrenables) | 128 s |
 | Swin Transformer | pendiente de entrenar | pendiente de entrenar | pendiente de entrenar | pendiente de entrenar |
-| Regresión logística | pendiente de entrenar | pendiente de entrenar | n/d | pendiente de entrenar |
-| SVM (RBF) | pendiente de entrenar | pendiente de entrenar | n/d | pendiente de entrenar |
-| Random Forest | pendiente de entrenar | pendiente de entrenar | n/d | pendiente de entrenar |
+| Regresión logística | 94.17 % | 93.91 % | n/d | 0.46 s |
+| SVM (RBF) | 95.42 % | 95.26 % | n/d | 0.37 s |
+| Random Forest | 93.33 % | 93.00 % | n/d | 1.59 s |
 
-Los cuadernos se han entregado **sin ejecutar** (sin entrenar, sin descargar
-nada): al ejecutarlos por primera vez se rellenan `resultados/` y esta tabla
-(`resultados/comparacion/model_summary.csv`). Mientras tanto, `reto-1.ipynb`
-imprime un aviso y termina sin error.
+Resultados obtenidos el 17/11/2026 ejecutando los cuadernos con el entorno
+`.venv` del repositorio (240 imágenes de test, las mismas para todos).
+DenseNet121 gana con un IC 95 % de 96.67–99.58 %. McNemar: DenseNet121 vs
+CNN base p = 0.0001 y vs CNN mejorada p < 0.0001 (diferencias significativas);
+CNN base vs CNN mejorada p = 0.2005 y SVM vs DenseNet121 p = 0.0654 (dentro
+del ruido). La tabla completa está en
+`resultados/comparacion/model_summary.csv`.
+
+El Swin Transformer (`ScenesSWIN.ipynb`) todavía no se ha entrenado: su
+cuaderno y su sección de comparación están integrados, y `reto-1.ipynb` lo
+incorporará a la tabla en cuanto exista `resultados/swin/`.
 
 ## Notas técnicas
 
@@ -122,10 +131,13 @@ imprime un aviso y termina sin error.
   el learning rate con `ReduceLROnPlateau`.
 * **Pesos de ImageNet.** `DenseNet121(weights="imagenet")` descarga los pesos
   en la primera ejecución de `ScenesDenseNet.ipynb`; es el único acceso a
-  internet de todo el reto (aquí no se ha ejecutado, así que no se ha
-  descargado nada).
+  internet de todo el reto.
 * **Augmentación dentro del modelo.** Las capas `Random*` viven dentro de las
   arquitecturas y Keras las desactiva automáticamente en inferencia.
+* **Early stopping de la CNN mejorada.** Se monitoriza `val_accuracy`, no
+  `val_loss`: con 108 imágenes de validación el mínimo de `val_loss` puede
+  caer en la primera época y `restore_best_weights` devolvería un modelo sin
+  entrenar.
 * **`class_weight`.** La CNN mejorada pondera las clases para compensar el
   desbalance 38/34/28 % del train.
 * **Grad-CAM.** `ScenesDenseNet.ipynb` guarda en
@@ -151,11 +163,11 @@ ejecución: entrena los siete modelos; siguientes ejecuciones: cargan los
 artefactos guardados):
 
 ```bash
-../../venv/bin/jupyter nbconvert --to notebook --execute --inplace ScenesCNN.ipynb
-../../venv/bin/jupyter nbconvert --to notebook --execute --inplace ScenesDenseNet.ipynb
-../../venv/bin/jupyter nbconvert --to notebook --execute --inplace ScenesClassicML.ipynb
-../../venv/bin/jupyter nbconvert --to notebook --execute --inplace ScenesSWIN.ipynb
-../../venv/bin/jupyter nbconvert --to notebook --execute --inplace reto-1.ipynb
+../../.venv/bin/jupyter nbconvert --to notebook --execute --inplace ScenesCNN.ipynb
+../../.venv/bin/jupyter nbconvert --to notebook --execute --inplace ScenesDenseNet.ipynb
+../../.venv/bin/jupyter nbconvert --to notebook --execute --inplace ScenesClassicML.ipynb
+../../.venv/bin/jupyter nbconvert --to notebook --execute --inplace ScenesSWIN.ipynb
+../../.venv/bin/jupyter nbconvert --to notebook --execute --inplace reto-1.ipynb
 ```
 
 `common_3scenes.py` centraliza la carga de imágenes (con resolución de la ruta
@@ -198,9 +210,9 @@ Siguiendo la indicación del SPEC (sec. 0), se documentan aquí las dudas:
    stopping, así que la validación no interviene en su ajuste; se entrenan con
    el train del split común (no con train+val) para mantener la comparabilidad
    con los modelos de deep learning, que también se ajustan solo con train.
-7. **`../../venv` no existe en la máquina de edición.** Los comandos de
-   reproducción usan la ruta que exige el SPEC; en este equipo el entorno no
-   está creado, pero la ruta es la canónica del repositorio.
+7. **Entorno virtual.** El repositorio usa `.venv/` en la raíz (ignorado por
+   git), no `venv/`; los comandos de reproducción apuntan a
+   `../../.venv/bin/jupyter`.
 8. **Hiperparámetros del Swin en `metrics.json`.** El SPEC de esta segunda
    entrega exige registrar `input`, `patch_size`, `embed_dims`, `depths`,
    `num_heads`, `window_size`, `dropout`, `optimizer`, `lr`, `weight_decay`,
