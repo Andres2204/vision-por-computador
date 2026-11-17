@@ -1,0 +1,5 @@
+,CNN base,CNN mejorada,DenseNet121,Swin Transformer
+CNN base,1.0000,0.0000,0.0000,0.0000
+CNN mejorada,0.0000,1.0000,0.2266,0.5034
+DenseNet121,0.0000,0.2266,1.0000,0.0490
+Swin Transformer,0.0000,0.5034,0.0490,1.0000

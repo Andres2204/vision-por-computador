@@ -1,0 +1,89 @@
+{
+  "name": "Swin Transformer",
+  "family": "Transformer",
+  "classes": [
+    "denseresidential",
+    "harbor",
+    "river"
+  ],
+  "n_test": 375,
+  "accuracy": 0.9653333333333334,
+  "precision_macro": 0.9661673369996443,
+  "recall_macro": 0.9653333333333333,
+  "f1_macro": 0.965436661612436,
+  "f1_weighted": 0.9654366616124361,
+  "cohen_kappa": 0.948,
+  "confusion_matrix": [
+    [
+      118,
+      1,
+      6
+    ],
+    [
+      0,
+      122,
+      3
+    ],
+    [
+      2,
+      1,
+      122
+    ]
+  ],
+  "per_class": {
+    "denseresidential": {
+      "precision": 0.9833333333333333,
+      "recall": 0.944,
+      "f1": 0.963265306122449,
+      "support": 125
+    },
+    "harbor": {
+      "precision": 0.9838709677419355,
+      "recall": 0.976,
+      "f1": 0.9799196787148594,
+      "support": 125
+    },
+    "river": {
+      "precision": 0.9312977099236641,
+      "recall": 0.976,
+      "f1": 0.953125,
+      "support": 125
+    }
+  },
+  "parameters": 5133871,
+  "trainable_parameters": 5133871,
+  "training_seconds": 833.33,
+  "inference_ms_per_image": 23.187,
+  "epochs": 40,
+  "hyperparameters": {
+    "patch_size": 8,
+    "window_size": 4,
+    "dims": [
+      48,
+      96,
+      192,
+      384
+    ],
+    "depths": [
+      2,
+      2,
+      2,
+      2
+    ],
+    "heads": [
+      2,
+      4,
+      8,
+      16
+    ],
+    "optimizer": "AdamW",
+    "lr": 0.0003,
+    "weight_decay": 0.01,
+    "label_smoothing": 0.0,
+    "batch_size": 32,
+    "epochs_max": 40,
+    "pretrained": false
+  },
+  "notes": "Swin Transformer trained from scratch (no ImageNet weights).",
+  "roc_auc_ovr_macro": 0.992928
+}
