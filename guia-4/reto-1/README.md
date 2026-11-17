@@ -10,6 +10,7 @@ las mismas métricas:
 | CNN | CNN base (réplica del cuaderno del profesor, 8-16-32) | `ScenesCNN.ipynb` | `resultados/cnn/base/` |
 | CNN | CNN mejorada (32-64-128 + BN + Dropout + GAP + augmentación) | `ScenesCNN.ipynb` | `resultados/cnn/mejorada/` |
 | DL no secuencial | DenseNet121 preentrenada en ImageNet + fine-tuning en dos fases | `ScenesDenseNet.ipynb` | `resultados/densenet/` (+ `gradcam.png`) |
+| IA generativa | Swin Transformer entrenado desde cero (ventanas locales y desplazadas) | `ScenesSWIN.ipynb` | `resultados/swin/` |
 | Machine learning | Regresión logística (HSV+HOG, escalada) | `ScenesClassicML.ipynb` | `resultados/ml/logreg/` |
 | Machine learning | SVM (kernel RBF, C=10) | `ScenesClassicML.ipynb` | `resultados/ml/svm/` |
 | Machine learning | Random Forest (300 árboles) | `ScenesClassicML.ipynb` | `resultados/ml/rf/` |
@@ -18,9 +19,22 @@ las mismas métricas:
 La arquitectura **no secuencial** que pide el enunciado es `DenseNet121`
 preentrenada en ImageNet con fine-tuning en dos fases (base congelada y
 descongelación de las últimas 40 capas manteniendo las `BatchNormalization`
-congeladas). La comparación con **IA generativa** (Transformer tipo ViT/SWIN)
-llega en la entrega siguiente: `resultados/` está preparado para que solo haya
-que añadir una carpeta más con el mismo esquema.
+congeladas). La bala de **IA generativa** es un **Swin Transformer entrenado
+desde cero** (`ScenesSWIN.ipynb`): atención por ventanas locales y
+desplazadas sobre una jerarquía de etapas tipo CNN, sin ningún peso de
+ImageNet, de modo que la comparación con DenseNet121 separa *arquitectura*
+(atención vs convolución) de *preentrenamiento* (ImageNet vs desde cero).
+
+El Swin es el modelo **más difícil de los cuatro de entrenar** con este
+dataset: un Transformer no trae los sesgos inductivos de las convoluciones
+(localidad, compartición de pesos) y tiene que aprenderlos de los datos, pero
+solo hay ~612 imágenes de train. La augmentación, el `weight_decay` de AdamW y
+el early stopping son imprescindibles y, aun así, cabe esperar que quede por
+detrás de la DenseNet121 preentrenada: el hueco entre ambos mezcla
+arquitectura y preentrenamiento, y `reto-1.ipynb` lo descompone con el
+McNemar y los IC de bootstrap. Además, sus capas personalizadas no se
+deserializan con fiabilidad, así que se guarda también `model.weights.h5` y
+se recarga reconstruyendo la arquitectura.
 
 ## Dataset
 
@@ -68,6 +82,7 @@ resultados/
 │   ├── base/
 │   └── mejorada/
 ├── densenet/            # incluye gradcam.png
+├── swin/                # incluye model.weights.h5 para recargar capas personalizadas
 ├── ml/
 │   ├── logreg/          # model.joblib, sin history.csv
 │   ├── svm/
@@ -88,6 +103,7 @@ resultados/
 | CNN base | pendiente de entrenar | pendiente de entrenar | pendiente de entrenar | pendiente de entrenar |
 | CNN mejorada | pendiente de entrenar | pendiente de entrenar | pendiente de entrenar | pendiente de entrenar |
 | DenseNet121 | pendiente de entrenar | pendiente de entrenar | pendiente de entrenar | pendiente de entrenar |
+| Swin Transformer | pendiente de entrenar | pendiente de entrenar | pendiente de entrenar | pendiente de entrenar |
 | Regresión logística | pendiente de entrenar | pendiente de entrenar | n/d | pendiente de entrenar |
 | SVM (RBF) | pendiente de entrenar | pendiente de entrenar | n/d | pendiente de entrenar |
 | Random Forest | pendiente de entrenar | pendiente de entrenar | n/d | pendiente de entrenar |
@@ -116,6 +132,10 @@ imprime un aviso y termina sin error.
   `resultados/densenet/gradcam.png` una imagen de test con su mapa de calor
   para cada una de las tres clases; la celda está protegida con `try/except`
   para que el cuaderno nunca se rompa por la figura.
+* **Recarga del Swin.** Las capas personalizadas del Swin (`WindowAttention`,
+  `SwinBlock`, …) no se deserializan con fiabilidad desde `model.keras`, así
+  que `ScenesSWIN.ipynb` guarda además `model.weights.h5` y `load_swin`
+  reconstruye la arquitectura con `build_swin()` antes de cargar los pesos.
 
 ## Dependencias
 
@@ -127,13 +147,14 @@ Están instalados en el entorno `venv` del repositorio.
 ## Reproducción
 
 Desde esta carpeta y con el entorno virtual del repositorio (primera
-ejecución: entrena los seis modelos; siguientes ejecuciones: cargan los
+ejecución: entrena los siete modelos; siguientes ejecuciones: cargan los
 artefactos guardados):
 
 ```bash
 ../../venv/bin/jupyter nbconvert --to notebook --execute --inplace ScenesCNN.ipynb
 ../../venv/bin/jupyter nbconvert --to notebook --execute --inplace ScenesDenseNet.ipynb
 ../../venv/bin/jupyter nbconvert --to notebook --execute --inplace ScenesClassicML.ipynb
+../../venv/bin/jupyter nbconvert --to notebook --execute --inplace ScenesSWIN.ipynb
 ../../venv/bin/jupyter nbconvert --to notebook --execute --inplace reto-1.ipynb
 ```
 
@@ -151,9 +172,10 @@ Siguiendo la indicación del SPEC (sec. 0), se documentan aquí las dudas:
    distinto del de reto 2 (`barras_accuracy_f1.png`, accuracy + F1). Se ha
    seguido el SPEC.
 2. **`mcnemar_pvalues.csv` con formato largo.** Reto 2 guardaba una matriz
-   completa de p-valores; el SPEC de este reto pide solo cuatro comparaciones
-   (base vs mejorada, mejorada vs DenseNet, base vs DenseNet, mejor ML vs
-   mejor DL), así que el CSV guarda esas cuatro filas en formato largo.
+   completa de p-valores; el SPEC pide comparaciones concretas (base vs
+   mejorada, mejorada vs DenseNet, base vs DenseNet y, desde la segunda
+   entrega, DenseNet vs Swin y CNN mejorada vs Swin), más el mejor ML vs el
+   mejor DL, así que el CSV guarda una fila por comparación en formato largo.
 3. **`model.joblib` en `resultados/ml/`.** El SPEC exige reutilizar
    `load_or_train`, pero los estimadores de sklearn no guardan en `.keras`;
    se añade el artefacto `model.joblib` (y su carga con joblib) para que
@@ -179,3 +201,9 @@ Siguiendo la indicación del SPEC (sec. 0), se documentan aquí las dudas:
 7. **`../../venv` no existe en la máquina de edición.** Los comandos de
    reproducción usan la ruta que exige el SPEC; en este equipo el entorno no
    está creado, pero la ruta es la canónica del repositorio.
+8. **Hiperparámetros del Swin en `metrics.json`.** El SPEC de esta segunda
+   entrega exige registrar `input`, `patch_size`, `embed_dims`, `depths`,
+   `num_heads`, `window_size`, `dropout`, `optimizer`, `lr`, `weight_decay`,
+   `batch_size`, `epochs` y `trained_from_scratch: True`; difieren de las
+   claves del cuaderno de referencia de reto 2 (`dims`, `heads`,
+   `epochs_max`, `pretrained`) y se ha seguido el SPEC.
