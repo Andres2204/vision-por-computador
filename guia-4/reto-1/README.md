@@ -12,6 +12,7 @@ las mismas métricas:
 | CNN | CNN mejorada v2 (segunda iteración: augmentación suave, lr 3e-4, `label_smoothing` y early stopping sobre `val_loss`) | `ScenesCNN.ipynb` | `resultados/cnn/mejorada_v2/` |
 | DL no secuencial | DenseNet121 preentrenada en ImageNet + fine-tuning en dos fases | `ScenesDenseNet.ipynb` | `resultados/densenet/` (+ `gradcam.png`) |
 | IA generativa | Swin Transformer entrenado desde cero (ventanas locales y desplazadas) | `ScenesSWIN.ipynb` | `resultados/swin/` |
+| IA generativa | ViT (Vision Transformer) entrenado desde cero (atención global sobre todos los parches) | `ScenesViT.ipynb` | `resultados/vit/` |
 | Machine learning | Regresión logística (HSV+HOG, escalada) | `ScenesClassicML.ipynb` | `resultados/ml/logreg/` |
 | Machine learning | SVM (kernel RBF, C=10) | `ScenesClassicML.ipynb` | `resultados/ml/svm/` |
 | Machine learning | Random Forest (300 árboles) | `ScenesClassicML.ipynb` | `resultados/ml/rf/` |
@@ -24,11 +25,13 @@ genera a partir de `resultados/`.
 La arquitectura **no secuencial** que pide el enunciado es `DenseNet121`
 preentrenada en ImageNet con fine-tuning en dos fases (base congelada y
 descongelación de las últimas 40 capas manteniendo las `BatchNormalization`
-congeladas). La bala de **IA generativa** es un **Swin Transformer entrenado
-desde cero** (`ScenesSWIN.ipynb`): atención por ventanas locales y
-desplazadas sobre una jerarquía de etapas tipo CNN, sin ningún peso de
-ImageNet, de modo que la comparación con DenseNet121 separa *arquitectura*
-(atención vs convolución) de *preentrenamiento* (ImageNet vs desde cero).
+congeladas). La bala de **IA generativa** son dos Transformers entrenados **desde cero**
+(el enunciado admite «ViT, SWIN u otro»): el **Swin Transformer**
+(`ScenesSWIN.ipynb`), con atención por ventanas locales y desplazadas sobre
+una jerarquía de etapas tipo CNN, y el **ViT** (`ScenesViT.ipynb`), con
+atención global sobre una arquitectura plana. Ninguno usa pesos de ImageNet,
+de modo que la comparación con DenseNet121 separa *arquitectura* (atención vs
+convolución) de *preentrenamiento* (ImageNet vs desde cero).
 
 El Swin es el modelo **más difícil de los cuatro de entrenar** con este
 dataset: un Transformer no trae los sesgos inductivos de las convoluciones
@@ -40,6 +43,22 @@ arquitectura y preentrenamiento, y `reto-1.ipynb` lo descompone con el
 McNemar y los IC de bootstrap. Además, sus capas personalizadas no se
 deserializan con fiabilidad, así que se guarda también `model.weights.h5` y
 se recarga reconstruyendo la arquitectura.
+
+El **ViT** (`ScenesViT.ipynb`) completa la bala de IA generativa con el
+Transformer original: parches de 8×8 (16×16 = 256 tokens), atención
+**global** (todos los parches atienden a todos, `O(n²)`) y una arquitectura
+**plana** de seis bloques idénticos, sin las etapas jerárquicas ni las
+ventanas del Swin. Se entrena también **desde cero** con el mismo split
+congelado, así que añade el contraste *dentro* de la familia Transformer:
+ViT vs Swin compara dos variantes de atención (global plana frente a
+ventanas locales jerárquicas) con el preentrenamiento fuera de la ecuación, y
+ambos frente a DenseNet121 vuelven a separar arquitectura y preentrenamiento.
+Con ~610 imágenes de train, lo esperable es que el ViT quede **cerca del
+Swin** —los dos sufren el mismo *data starvation* y ninguno hereda los sesgos
+inductivos de las convoluciones— y lejos de la DenseNet121: sin ImageNet, la
+atención global plana no tiene pesos previos con los que compensar la falta
+de datos. Como el Swin, sus capas personalizadas se recargan reconstruyendo
+la arquitectura y leyendo `model.weights.h5`.
 
 ## Dataset
 
@@ -90,6 +109,7 @@ resultados/
 │   └── mejorada/
 ├── densenet/            # incluye gradcam.png
 ├── swin/                # incluye model.weights.h5 para recargar capas personalizadas
+├── vit/                 # igual que swin/: model.weights.h5 + ejemplos_prediccion.png
 ├── ml/
 │   ├── logreg/          # model.joblib, sin history.csv
 │   ├── svm/
@@ -112,6 +132,7 @@ resultados/
 | CNN mejorada v2 | 89.17 % | 88.50 % | 305 251 | 963 s |
 | DenseNet121 | 98.33 % | 98.36 % | 7 040 579 (818 179 entrenables) | 128 s |
 | Swin Transformer | 83.33 % | 82.81 % | 5 133 871 | 118 s |
+| ViT (desde cero) | pendiente de entrenar | pendiente de entrenar | n/d | n/d |
 | Regresión logística | 94.17 % | 93.91 % | n/d | 0.46 s |
 | SVM (RBF) | 95.42 % | 95.26 % | n/d | 0.37 s |
 | Random Forest | 93.33 % | 93.00 % | n/d | 1.59 s |
@@ -191,6 +212,7 @@ siguientes ejecuciones: cargan los artefactos guardados):
 ../../.venv/bin/jupyter nbconvert --to notebook --execute --inplace ScenesDenseNet.ipynb
 ../../.venv/bin/jupyter nbconvert --to notebook --execute --inplace ScenesClassicML.ipynb
 ../../.venv/bin/jupyter nbconvert --to notebook --execute --inplace ScenesSWIN.ipynb
+../../.venv/bin/jupyter nbconvert --to notebook --execute --inplace ScenesViT.ipynb
 ../../.venv/bin/jupyter nbconvert --to notebook --execute --inplace reto-1.ipynb
 ```
 
