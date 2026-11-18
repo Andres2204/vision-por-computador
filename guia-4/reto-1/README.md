@@ -11,54 +11,39 @@ las mismas métricas:
 | CNN | CNN mejorada (32-64-128, dos convoluciones por bloque, BN + Dropout + GAP + Dense(128) + augmentación) | `ScenesCNN.ipynb` | `resultados/cnn/mejorada/` |
 | CNN | CNN mejorada v2 (segunda iteración: augmentación suave, lr 3e-4, `label_smoothing` y early stopping sobre `val_loss`) | `ScenesCNN.ipynb` | `resultados/cnn/mejorada_v2/` |
 | DL no secuencial | DenseNet121 preentrenada en ImageNet + fine-tuning en dos fases | `ScenesDenseNet.ipynb` | `resultados/densenet/` (+ `gradcam.png`) |
-| IA generativa | Swin Transformer entrenado desde cero (ventanas locales y desplazadas) | `ScenesSWIN.ipynb` | `resultados/swin/` |
 | IA generativa | ViT (Vision Transformer) entrenado desde cero (atención global sobre todos los parches) | `ScenesViT.ipynb` | `resultados/vit/` |
 | Machine learning | Regresión logística (HSV+HOG, escalada) | `ScenesClassicML.ipynb` | `resultados/ml/logreg/` |
 | Machine learning | SVM (kernel RBF, C=10) | `ScenesClassicML.ipynb` | `resultados/ml/svm/` |
 | Machine learning | Random Forest (300 árboles) | `ScenesClassicML.ipynb` | `resultados/ml/rf/` |
 | Comparación | Tabla resumen, 4 figuras, McNemar y conclusiones | `reto-1.ipynb` | `resultados/comparacion/` |
 
-El informe listo para enviar está en `informe-reto-1.pdf` (6 páginas): resumen,
-protocolo, tabla de los 8 modelos, McNemar, las 4 figuras y conclusiones. Se
-genera a partir de `resultados/`.
+El informe se genera a partir de `resultados/` y se guarda como
+`informe-reto-1.pdf` en esta carpeta (ignorado por git): resumen, protocolo,
+tabla de los modelos, McNemar, las 4 figuras y conclusiones.
 
 La arquitectura **no secuencial** que pide el enunciado es `DenseNet121`
 preentrenada en ImageNet con fine-tuning en dos fases (base congelada y
 descongelación de las últimas 40 capas manteniendo las `BatchNormalization`
-congeladas). La bala de **IA generativa** son dos Transformers entrenados **desde cero**
-(el enunciado admite «ViT, SWIN u otro»): el **Swin Transformer**
-(`ScenesSWIN.ipynb`), con atención por ventanas locales y desplazadas sobre
-una jerarquía de etapas tipo CNN, y el **ViT** (`ScenesViT.ipynb`), con
-atención global sobre una arquitectura plana. Ninguno usa pesos de ImageNet,
-de modo que la comparación con DenseNet121 separa *arquitectura* (atención vs
-convolución) de *preentrenamiento* (ImageNet vs desde cero).
+congeladas). La bala de **IA generativa** la cubre un **ViT** entrenado
+**desde cero** (`ScenesViT.ipynb`; el enunciado admite «ViT, SWIN u otro»):
+parches de 8×8 (16×16 = 256 tokens), atención **global** (todos los parches
+atienden a todos, `O(n²)`) y una arquitectura **plana** de seis bloques
+idénticos (dim 256, 8 cabezas, MLP 1024, dropout 0.1), sin etapas jerárquicas.
+No usa pesos de ImageNet, de modo que la comparación con DenseNet121 separa
+*arquitectura* (atención vs convolución) de *preentrenamiento* (ImageNet vs
+desde cero), y la comparación con la CNN mejorada v2 —que también arranca
+desde cero— aísla la arquitectura.
 
-El Swin es el modelo **más difícil de los cuatro de entrenar** con este
-dataset: un Transformer no trae los sesgos inductivos de las convoluciones
-(localidad, compartición de pesos) y tiene que aprenderlos de los datos, pero
-solo hay ~610 imágenes de train. La augmentación, el `weight_decay` de AdamW y
-el early stopping son imprescindibles y, aun así, cabe esperar que quede por
-detrás de la DenseNet121 preentrenada: el hueco entre ambos mezcla
-arquitectura y preentrenamiento, y `reto-1.ipynb` lo descompone con el
-McNemar y los IC de bootstrap. Además, sus capas personalizadas no se
-deserializan con fiabilidad, así que se guarda también `model.weights.h5` y
-se recarga reconstruyendo la arquitectura.
-
-El **ViT** (`ScenesViT.ipynb`) completa la bala de IA generativa con el
-Transformer original: parches de 8×8 (16×16 = 256 tokens), atención
-**global** (todos los parches atienden a todos, `O(n²)`) y una arquitectura
-**plana** de seis bloques idénticos, sin las etapas jerárquicas ni las
-ventanas del Swin. Se entrena también **desde cero** con el mismo split
-congelado, así que añade el contraste *dentro* de la familia Transformer:
-ViT vs Swin compara dos variantes de atención (global plana frente a
-ventanas locales jerárquicas) con el preentrenamiento fuera de la ecuación, y
-ambos frente a DenseNet121 vuelven a separar arquitectura y preentrenamiento.
-Con ~610 imágenes de train, lo esperable es que el ViT quede **cerca del
-Swin** —los dos sufren el mismo *data starvation* y ninguno hereda los sesgos
-inductivos de las convoluciones— y lejos de la DenseNet121: sin ImageNet, la
-atención global plana no tiene pesos previos con los que compensar la falta
-de datos. Como el Swin, sus capas personalizadas se recargan reconstruyendo
-la arquitectura y leyendo `model.weights.h5`.
+El ViT es el modelo **más difícil de entrenar** con este dataset: un
+Transformer no trae los sesgos inductivos de las convoluciones (localidad,
+compartición de pesos) y tiene que aprenderlos de los datos, pero solo hay
+~610 imágenes de train. La augmentación, el `weight_decay` de AdamW y el early
+stopping son imprescindibles y, aun así, cabe esperar que quede por detrás de
+la DenseNet121 preentrenada: el hueco entre ambos mezcla arquitectura y
+preentrenamiento, y `reto-1.ipynb` lo descompone con el McNemar y los IC de
+bootstrap. Además, sus capas personalizadas no se deserializan con fiabilidad,
+así que se guarda también `model.weights.h5` y se recarga reconstruyendo la
+arquitectura con `build_vit()`.
 
 ## Dataset
 
@@ -109,8 +94,7 @@ resultados/
 │   ├── mejorada/
 │   └── mejorada_v2/
 ├── densenet/            # incluye gradcam.png
-├── swin/                # incluye model.weights.h5 para recargar capas personalizadas
-├── vit/                 # igual que swin/: model.weights.h5 + ejemplos_prediccion.png
+├── vit/                 # incluye model.weights.h5 + ejemplos_prediccion.png
 ├── ml/
 │   ├── logreg/          # model.joblib, sin history.csv
 │   ├── svm/
@@ -132,7 +116,6 @@ resultados/
 | CNN mejorada | 87.08 % | 86.08 % | 305 251 | 482 s |
 | CNN mejorada v2 | 89.17 % | 88.50 % | 305 251 | 963 s |
 | DenseNet121 | 98.33 % | 98.36 % | 7 040 579 (818 179 entrenables) | 128 s |
-| Swin Transformer | 83.33 % | 82.81 % | 5 133 871 | 118 s |
 | ViT (desde cero) | pendiente de entrenar | pendiente de entrenar | n/d | n/d |
 | Regresión logística | 94.17 % | 93.91 % | n/d | 0.46 s |
 | SVM (RBF) | 95.42 % | 95.26 % | n/d | 0.37 s |
@@ -141,15 +124,13 @@ resultados/
 Resultados obtenidos el 17/11/2026 ejecutando los cuadernos con el
 entorno `.venv` del repositorio (240 imágenes de test, las mismas para todos).
 DenseNet121 gana con un IC 95 % de 96.67–99.58 %. McNemar: DenseNet121 vs CNN
-base p = 0.0001, vs CNN mejorada p < 0.0001, vs CNN mejorada v2 p < 0.0001 y
-vs Swin p < 0.0001 (diferencias significativas); CNN base vs CNN mejorada
-p = 0.2005, CNN mejorada v2 vs base p = 0.7011, v2 vs v1 p = 0.2668, v2 vs Swin
-p = 0.0243 y SVM vs DenseNet121 p = 0.0654. La v2 sube a 89.17 %: +2.1 puntos
-sobre la v1 y −1.2 respecto a la base (ninguna de las dos diferencias es
-significativa). El Swin desde cero (83.33 %) queda por debajo de la v2
-(89.17 %) y esa diferencia sí es significativa (p = 0.0243); el hueco de 15
-puntos con DenseNet121 también. La tabla completa está en
-`resultados/comparacion/model_summary.csv`.
+base p = 0.0001, vs CNN mejorada p < 0.0001 y vs CNN mejorada v2 p < 0.0001
+(diferencias significativas); CNN base vs CNN mejorada p = 0.2005, CNN mejorada
+v2 vs base p = 0.7011, v2 vs v1 p = 0.2668 y SVM vs DenseNet121 p = 0.0654. La
+v2 sube a 89.17 %: +2.1 puntos sobre la v1 y −1.2 respecto a la base (ninguna
+de las dos diferencias es significativa). La tabla completa está en
+`resultados/comparacion/model_summary.csv`; el ViT entra en ella y en el
+McNemar en cuanto se ejecute `ScenesViT.ipynb`.
 
 La CNN mejorada se entrenó **dos veces**, y eso es parte del resultado. La
 primera versión (v1, 87.08 %) quedó 3.3 puntos por debajo de la base: su
@@ -188,8 +169,9 @@ comparación es orientativa y no entra en el McNemar.
 * Las características pesan tanto como el modelo: el mismo SVM pasa de
   88.75 % (Haralick) a 95.42 % (HOG), y con HOG el ML clásico supera a todas
   las redes entrenadas desde cero.
-* Con ~610 imágenes de train, lo que más aporta es el preentrenamiento: el Swin
-  desde cero (83.33 %) queda por debajo de los mejores modelos de la guía 2.
+* Con ~610 imágenes de train, lo que más aporta es el preentrenamiento: las
+  redes entrenadas desde cero se quedan en la banda del mejor modelo de la
+  guía 2 (90 %) o por debajo, mientras la DenseNet121 llega a 98.33 %.
 
 El detalle (los 9 modelos de la guía 2 y la tabla conjunta) está en la sección
 «Comparación con el machine learning original de la guía 2» de `reto-1.ipynb`.
@@ -217,10 +199,11 @@ El detalle (los 9 modelos de la guía 2 y la tabla conjunta) está en la secció
   `resultados/densenet/gradcam.png` una imagen de test con su mapa de calor
   para cada una de las tres clases; la celda está protegida con `try/except`
   para que el cuaderno nunca se rompa por la figura.
-* **Recarga del Swin.** Las capas personalizadas del Swin (`WindowAttention`,
-  `SwinBlock`, …) no se deserializan con fiabilidad desde `model.keras`, así
-  que `ScenesSWIN.ipynb` guarda además `model.weights.h5` y `load_swin`
-  reconstruye la arquitectura con `build_swin()` antes de cargar los pesos.
+* **Recarga del ViT.** Las capas personalizadas del ViT (`PatchEmbedding`,
+  `PatchEncoder`, `TransformerBlock`) no se deserializan con fiabilidad desde
+  `model.keras`, así que `ScenesViT.ipynb` guarda además `model.weights.h5` y
+  `load_vit` reconstruye la arquitectura con `build_vit()` antes de cargar los
+  pesos.
 
 ## Dependencias
 
@@ -239,7 +222,6 @@ siguientes ejecuciones: cargan los artefactos guardados):
 ../../.venv/bin/jupyter nbconvert --to notebook --execute --inplace ScenesCNN.ipynb
 ../../.venv/bin/jupyter nbconvert --to notebook --execute --inplace ScenesDenseNet.ipynb
 ../../.venv/bin/jupyter nbconvert --to notebook --execute --inplace ScenesClassicML.ipynb
-../../.venv/bin/jupyter nbconvert --to notebook --execute --inplace ScenesSWIN.ipynb
 ../../.venv/bin/jupyter nbconvert --to notebook --execute --inplace ScenesViT.ipynb
 ../../.venv/bin/jupyter nbconvert --to notebook --execute --inplace reto-1.ipynb
 ```
@@ -260,8 +242,9 @@ Siguiendo la indicación del SPEC (sec. 0), se documentan aquí las dudas:
 2. **`mcnemar_pvalues.csv` con formato largo.** Reto 2 guardaba una matriz
    completa de p-valores; el SPEC pide comparaciones concretas (base vs
    mejorada, mejorada vs DenseNet, base vs DenseNet y, desde la segunda
-   entrega, DenseNet vs Swin y CNN mejorada vs Swin), más el mejor ML vs el
-   mejor DL, así que el CSV guarda una fila por comparación en formato largo.
+   entrega, el ViT contra la CNN mejorada v2 y contra DenseNet), más el mejor
+   ML vs el mejor DL, así que el CSV guarda una fila por comparación en
+   formato largo.
 3. **`model.joblib` en `resultados/ml/`.** El SPEC exige reutilizar
    `load_or_train`, pero los estimadores de sklearn no guardan en `.keras`;
    se añade el artefacto `model.joblib` (y su carga con joblib) para que
@@ -287,9 +270,8 @@ Siguiendo la indicación del SPEC (sec. 0), se documentan aquí las dudas:
 7. **Entorno virtual.** El repositorio usa `.venv/` en la raíz (ignorado por
    git), no `venv/`; los comandos de reproducción apuntan a
    `../../.venv/bin/jupyter`.
-8. **Hiperparámetros del Swin en `metrics.json`.** El SPEC de esta segunda
-   entrega exige registrar `input`, `patch_size`, `embed_dims`, `depths`,
-   `num_heads`, `window_size`, `dropout`, `optimizer`, `lr`, `weight_decay`,
-   `batch_size`, `epochs` y `trained_from_scratch: True`; difieren de las
-   claves del cuaderno de referencia de reto 2 (`dims`, `heads`,
-   `epochs_max`, `pretrained`) y se ha seguido el SPEC.
+8. **Hiperparámetros del ViT en `metrics.json`.** El SPEC de esta entrega
+   exige registrar la configuración del Transformer; el ViT guarda `input`,
+   `patch_size`, `embed_dim`, `depth`, `num_heads`, `mlp_dim`, `dropout`,
+   `label_smoothing`, `optimizer`, `lr`, `weight_decay`, `batch_size`,
+   `epochs` y `trained_from_scratch: True`.
