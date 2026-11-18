@@ -9,3 +9,8 @@ sam_b.pt
 /**/MASATI-v2
 /**/landuse-dataset/**
 guia-2/reto-5/3scenes/
+
+# copia suelta del dataset de 3 escenas en la raiz (ya esta en guia-2/reto-5/3scenes/)
+/coast/
+/forest/
+/highway/

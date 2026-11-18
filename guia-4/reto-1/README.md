@@ -106,7 +106,8 @@ resultados/
 ├── split.json
 ├── cnn/
 │   ├── base/
-│   └── mejorada/
+│   ├── mejorada/
+│   └── mejorada_v2/
 ├── densenet/            # incluye gradcam.png
 ├── swin/                # incluye model.weights.h5 para recargar capas personalizadas
 ├── vit/                 # igual que swin/: model.weights.h5 + ejemplos_prediccion.png
@@ -167,6 +168,32 @@ hiperparámetros o la función de costo» del enunciado. El resultado es 89.17 %
 no separa ninguna de las dos diferencias (p = 0.2668 y p = 0.7011). La v1 se
 conserva como evidencia de la iteración.
 
+### Comparación con el machine learning original de la guía 2
+
+Las cifras se transcriben de las salidas de `guia-2/reto-5/reto-5.ipynb` (no
+se reentrenan). Ese cuaderno usa el mismo protocolo (25 % de test, semilla 20,
+estratificado, 240 imágenes), pero carga las imágenes en otro orden, así que la
+comparación es orientativa y no entra en el McNemar.
+
+| Modelo (guía 2) | Características | Accuracy CV | Accuracy test |
+|---|---|---|---|
+| Random Forest | RGB + HSV + Haralick | 90.11 % | 90.00 % |
+| MLP | RGB + HSV + Haralick | 90.67 % | 89.17 % |
+| SVC (RBF), elegido por CV | RGB + HSV + Haralick | 90.81 % | 88.75 % |
+| MLP (línea base) | medias/desv. RGB | — | 81.25 % |
+
+* Frente al ML del inicio del curso, el deep learning sí mejora: DenseNet121
+  (98.33 %) le saca 8–10 puntos y la CNN base del profesor (90.42 %) ya lo
+  iguala sin diseñar características a mano.
+* Las características pesan tanto como el modelo: el mismo SVM pasa de
+  88.75 % (Haralick) a 95.42 % (HOG), y con HOG el ML clásico supera a todas
+  las redes entrenadas desde cero.
+* Con ~610 imágenes de train, lo que más aporta es el preentrenamiento: el Swin
+  desde cero (83.33 %) queda por debajo de los mejores modelos de la guía 2.
+
+El detalle (los 9 modelos de la guía 2 y la tabla conjunta) está en la sección
+«Comparación con el machine learning original de la guía 2» de `reto-1.ipynb`.
+
 ## Notas técnicas
 
 * **`Adam(decay=...)` y Keras 3.** El cuaderno original del profesor usaba
@@ -179,10 +206,11 @@ conserva como evidencia de la iteración.
   internet de todo el reto.
 * **Augmentación dentro del modelo.** Las capas `Random*` viven dentro de las
   arquitecturas y Keras las desactiva automáticamente en inferencia.
-* **Early stopping de la CNN mejorada.** Se monitoriza `val_accuracy`, no
-  `val_loss`: con 108 imágenes de validación el mínimo de `val_loss` puede
+* **Early stopping de la CNN mejorada.** La v1 monitoriza `val_accuracy`
+  (paciencia 8): con 108 imágenes de validación el mínimo de `val_loss` puede
   caer en la primera época y `restore_best_weights` devolvería un modelo sin
-  entrenar.
+  entrenar. La v2, con `lr` más bajo y augmentación suave, vuelve a
+  `val_loss` con paciencia 20.
 * **`class_weight`.** La CNN mejorada pondera las clases para compensar el
   desbalance 38/34/28 % del train.
 * **Grad-CAM.** `ScenesDenseNet.ipynb` guarda en
