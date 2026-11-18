@@ -209,8 +209,9 @@ El detalle (los 9 modelos de la guía 2 y la tabla conjunta) está en la secció
 
 Además de `numpy`, `opencv-python` y `scipy`, estos cuadernos usan
 `tensorflow`/`keras` (Keras 3), `scikit-learn`, `scikit-image` (HOG),
-`pandas`, `matplotlib`, `seaborn` y `joblib` (incluido con scikit-learn).
-Están instalados en el entorno `venv` del repositorio.
+`pandas`, `matplotlib`, `seaborn` y `joblib` (incluido con scikit-learn). El generador
+del informe usa además `reportlab` y `Pillow` (`pip install reportlab pillow`). Todo
+está instalado en el entorno `venv` del repositorio.
 
 ## Reproducción
 
@@ -224,7 +225,13 @@ siguientes ejecuciones: cargan los artefactos guardados):
 ../../.venv/bin/jupyter nbconvert --to notebook --execute --inplace ScenesClassicML.ipynb
 ../../.venv/bin/jupyter nbconvert --to notebook --execute --inplace ScenesViT.ipynb
 ../../.venv/bin/jupyter nbconvert --to notebook --execute --inplace reto-1.ipynb
+../../.venv/bin/python informe_reto_1.py
 ```
+
+`informe_reto_1.py` construye `informe-reto-1.pdf` leyendo solo los artefactos de
+`resultados/` (métricas, predicciones y las cuatro figuras): el bootstrap, el McNemar y
+todas las cifras del informe se recalculan en cada pasada, así que al reentrenar un modelo
+basta volver a ejecutarlo.
 
 `common_3scenes.py` centraliza la carga de imágenes (con resolución de la ruta
 del dataset), el split, las métricas, el guardado de resultados y la lógica de
