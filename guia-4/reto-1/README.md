@@ -12,6 +12,7 @@ las mismas métricas:
 | CNN | CNN mejorada v2 (segunda iteración: augmentación suave, lr 3e-4, `label_smoothing` y early stopping sobre `val_loss`) | `ScenesCNN.ipynb` | `resultados/cnn/mejorada_v2/` |
 | DL no secuencial | DenseNet121 preentrenada en ImageNet + fine-tuning en dos fases | `ScenesDenseNet.ipynb` | `resultados/densenet/` (+ `gradcam.png`) |
 | IA generativa | ViT (Vision Transformer) entrenado desde cero (atención global sobre todos los parches) | `ScenesViT.ipynb` | `resultados/vit/` |
+| IA generativa | ViT-B/16 preentrenado en ImageNet + fine-tuning en dos fases | `ScenesViTPretrained.ipynb` | `resultados/vit_preentrenado/` |
 | Machine learning | Regresión logística (HSV+HOG, escalada) | `ScenesClassicML.ipynb` | `resultados/ml/logreg/` |
 | Machine learning | SVM (kernel RBF, C=10) | `ScenesClassicML.ipynb` | `resultados/ml/svm/` |
 | Machine learning | Random Forest (300 árboles) | `ScenesClassicML.ipynb` | `resultados/ml/rf/` |
@@ -44,6 +45,25 @@ preentrenamiento, y `reto-1.ipynb` lo descompone con el McNemar y los IC de
 bootstrap. Además, sus capas personalizadas no se deserializan con fiabilidad,
 así que se guarda también `model.weights.h5` y se recarga reconstruyendo la
 arquitectura con `build_vit()`.
+
+Para separar del todo los dos efectos hay un **segundo ViT, preentrenado**
+(`ScenesViTPretrained.ipynb`): un ViT-B/16 de `keras-hub`
+(`vit_base_patch16_224_imagenet`, ~86 M de parámetros) ajustado en dos fases
+igual que la DenseNet121 (cabeza con el backbone congelado y después
+fine-tuning de los 2 últimos bloques). ViT desde cero vs ViT preentrenado mide
+lo que aporta ImageNet a un Transformer, y ViT preentrenado vs DenseNet121
+compara atención y convolución a igualdad de preentrenamiento. Notas:
+
+* Las imágenes de 128×128 se redimensionan a 224×224 y se escalan a [-1, 1]
+  dentro del modelo; el `ViTImageConverter` de `keras-hub` no se usa porque
+  exige `tensorflow-text`, que no existe para Python 3.14.
+* `keras-hub` se instala con `--no-deps` (`pip install --no-deps keras-hub
+  kagglehub kagglesdk regex tqdm`) para que pip no baje la versión de `keras`
+  del entorno. La primera ejecución descarga ~345 MB de pesos desde Kaggle.
+* Sus pesos ajustados (`resultados/vit_preentrenado/model.weights.h5`,
+  ~345 MB) superan el límite de 100 MB por archivo de GitHub y están
+  **ignorados por git**: el repositorio guarda métricas, predicciones e
+  historia, y en un clon nuevo el cuaderno reentrena el modelo.
 
 ## Dataset
 
@@ -95,6 +115,7 @@ resultados/
 │   └── mejorada_v2/
 ├── densenet/            # incluye gradcam.png
 ├── vit/                 # incluye model.weights.h5 + ejemplos_prediccion.png
+├── vit_preentrenado/    # model.weights.h5 solo en local (~345 MB, ignorado por git)
 ├── ml/
 │   ├── logreg/          # model.joblib, sin history.csv
 │   ├── svm/
@@ -116,21 +137,33 @@ resultados/
 | CNN mejorada | 87.08 % | 86.08 % | 305 251 | 482 s |
 | CNN mejorada v2 | 89.17 % | 88.50 % | 305 251 | 963 s |
 | DenseNet121 | 98.33 % | 98.36 % | 7 040 579 (818 179 entrenables) | 128 s |
-| ViT (desde cero) | pendiente de entrenar | pendiente de entrenar | n/d | n/d |
+| ViT (desde cero) | 88.75 % | 88.55 % | 4 855 299 | 2 345 s |
+| ViT preentrenado (ImageNet) | 97.50 % | 97.57 % | 85 800 963 (14 179 587 entrenables) | 1 212 s |
 | Regresión logística | 94.17 % | 93.91 % | n/d | 0.46 s |
 | SVM (RBF) | 95.42 % | 95.26 % | n/d | 0.37 s |
 | Random Forest | 93.33 % | 93.00 % | n/d | 1.59 s |
 
-Resultados obtenidos el 17/11/2026 ejecutando los cuadernos con el
-entorno `.venv` del repositorio (240 imágenes de test, las mismas para todos).
+Resultados obtenidos el 17/11/2026 (los dos ViT, el 18/11/2026) ejecutando los
+cuadernos en CPU con el entorno `.venv` del repositorio (240 imágenes de test,
+las mismas para todos).
 DenseNet121 gana con un IC 95 % de 96.67–99.58 %. McNemar: DenseNet121 vs CNN
 base p = 0.0001, vs CNN mejorada p < 0.0001 y vs CNN mejorada v2 p < 0.0001
 (diferencias significativas); CNN base vs CNN mejorada p = 0.2005, CNN mejorada
 v2 vs base p = 0.7011, v2 vs v1 p = 0.2668 y SVM vs DenseNet121 p = 0.0654. La
 v2 sube a 89.17 %: +2.1 puntos sobre la v1 y −1.2 respecto a la base (ninguna
 de las dos diferencias es significativa). La tabla completa está en
-`resultados/comparacion/model_summary.csv`; el ViT entra en ella y en el
-McNemar en cuanto se ejecute `ScenesViT.ipynb`.
+`resultados/comparacion/model_summary.csv`.
+
+Los dos ViT separan arquitectura y preentrenamiento:
+
+* **ViT desde cero (88.75 %) vs CNN mejorada v2 (89.17 %)**: p = 1.0000. Sin
+  preentrenamiento, la atención global empata con la convolución.
+* **ViT preentrenado (97.50 %) vs ViT desde cero**: +8.8 puntos, p = 0.0001.
+  Es el mayor salto del reto y solo cambia el punto de partida (ImageNet).
+* **ViT preentrenado vs DenseNet121 (98.33 %)**: −0.8 puntos, p = 0.6875. A
+  igualdad de preentrenamiento, atención y convolución rinden igual; la
+  DenseNet121 lo consigue con 12 veces menos parámetros y 10 veces menos
+  tiempo de entrenamiento.
 
 La CNN mejorada se entrenó **dos veces**, y eso es parte del resultado. La
 primera versión (v1, 87.08 %) quedó 3.3 puntos por debajo de la base: su
@@ -170,8 +203,9 @@ comparación es orientativa y no entra en el McNemar.
   88.75 % (Haralick) a 95.42 % (HOG), y con HOG el ML clásico supera a todas
   las redes entrenadas desde cero.
 * Con ~610 imágenes de train, lo que más aporta es el preentrenamiento: las
-  redes entrenadas desde cero se quedan en la banda del mejor modelo de la
-  guía 2 (90 %) o por debajo, mientras la DenseNet121 llega a 98.33 %.
+  redes entrenadas desde cero (CNN y ViT) se quedan en la banda del mejor
+  modelo de la guía 2 (90 %) o por debajo, mientras los dos modelos con
+  ImageNet llegan a 98.33 % (DenseNet121) y 97.50 % (ViT preentrenado).
 
 El detalle (los 9 modelos de la guía 2 y la tabla conjunta) está en la sección
 «Comparación con el machine learning original de la guía 2» de `reto-1.ipynb`.
@@ -184,8 +218,9 @@ El detalle (los 9 modelos de la guía 2 y la tabla conjunta) está en la secció
   base replica se compila con `Adam(1e-3)` sin decay; la CNN mejorada gestiona
   el learning rate con `ReduceLROnPlateau`.
 * **Pesos de ImageNet.** `DenseNet121(weights="imagenet")` descarga los pesos
-  en la primera ejecución de `ScenesDenseNet.ipynb`; es el único acceso a
-  internet de todo el reto.
+  en la primera ejecución de `ScenesDenseNet.ipynb`, y
+  `ScenesViTPretrained.ipynb` descarga el ViT-B/16 desde Kaggle; son los
+  únicos accesos a internet del reto.
 * **Augmentación dentro del modelo.** Las capas `Random*` viven dentro de las
   arquitecturas y Keras las desactiva automáticamente en inferencia.
 * **Early stopping de la CNN mejorada.** La v1 monitoriza `val_accuracy`
@@ -224,6 +259,7 @@ siguientes ejecuciones: cargan los artefactos guardados):
 ../../.venv/bin/jupyter nbconvert --to notebook --execute --inplace ScenesDenseNet.ipynb
 ../../.venv/bin/jupyter nbconvert --to notebook --execute --inplace ScenesClassicML.ipynb
 ../../.venv/bin/jupyter nbconvert --to notebook --execute --inplace ScenesViT.ipynb
+../../.venv/bin/jupyter nbconvert --to notebook --execute --inplace ScenesViTPretrained.ipynb
 ../../.venv/bin/jupyter nbconvert --to notebook --execute --inplace reto-1.ipynb
 ../../.venv/bin/python informe_reto_1.py
 ```
