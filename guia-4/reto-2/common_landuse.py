@@ -52,6 +52,7 @@ ARTIFACTS = {
     "report": "classification_report.txt",
     "model": "model.keras",
     "weights": "model.weights.h5",
+    "torch_model": "model.pt",
 }
 
 
@@ -355,6 +356,13 @@ def result_dir(folder: str | Path) -> Path:
     return RESULTS_DIR / folder
 
 
+def load_split():
+    """Load ``split.json`` as a dictionary, or an empty dict if absent."""
+    if not SPLIT_PATH.exists():
+        return {}
+    return json.loads(SPLIT_PATH.read_text())
+
+
 def load_metrics(folder: str | Path):
     """Load ``metrics.json`` for a model folder, or ``None`` if absent."""
     path = result_dir(folder) / ARTIFACTS["metrics"]
@@ -412,7 +420,7 @@ def load_or_train(
         It is only called after training and is responsible for saving results.
     load_model:
         Optional callable ``load_model(folder) -> model`` for architectures
-        whose ``.keras`` file cannot be deserialized (Swin in this project).
+        that need a custom loader instead of ``.keras`` deserialization.
     force:
         When ``True`` the model is retrained even if a cached copy exists.
 

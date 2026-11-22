@@ -1,0 +1,73 @@
+{
+  "name": "ViT-B/16 preentrenado",
+  "family": "IA generativa (Transformer)",
+  "classes": [
+    "denseresidential",
+    "harbor",
+    "river"
+  ],
+  "n_test": 375,
+  "accuracy": 0.9946666666666667,
+  "precision_macro": 0.994750656167979,
+  "recall_macro": 0.9946666666666667,
+  "f1_macro": 0.9946771211831452,
+  "f1_weighted": 0.9946771211831452,
+  "cohen_kappa": 0.992,
+  "confusion_matrix": [
+    [
+      125,
+      0,
+      0
+    ],
+    [
+      1,
+      124,
+      0
+    ],
+    [
+      1,
+      0,
+      124
+    ]
+  ],
+  "per_class": {
+    "denseresidential": {
+      "precision": 0.984251968503937,
+      "recall": 1.0,
+      "f1": 0.9920634920634921,
+      "support": 125
+    },
+    "harbor": {
+      "precision": 1.0,
+      "recall": 0.992,
+      "f1": 0.9959839357429718,
+      "support": 125
+    },
+    "river": {
+      "precision": 1.0,
+      "recall": 0.992,
+      "f1": 0.9959839357429718,
+      "support": 125
+    }
+  },
+  "parameters": 85800963,
+  "trainable_parameters": 14179587,
+  "training_seconds": 6115.07,
+  "inference_ms_per_image": 479.137,
+  "epochs": 10,
+  "hyperparameters": {
+    "preset": "vit_base_patch16_224_imagenet",
+    "image_size": 224,
+    "batch_size": 32,
+    "head_epochs": 8,
+    "fine_tune_epochs": 6,
+    "unfreeze_blocks": 2,
+    "optimizer": "Adam",
+    "head_lr": 0.001,
+    "fine_tune_lr": 1e-05,
+    "augmentation": "flip + rotation 0.05",
+    "rescaling": "1/127.5, offset -1 inside the model"
+  },
+  "notes": "ViT-B/16 pretrained on ImageNet-1k (keras-hub) with two-phase fine-tuning, aligned with reto 1.",
+  "roc_auc_ovr_macro": 1.0
+}

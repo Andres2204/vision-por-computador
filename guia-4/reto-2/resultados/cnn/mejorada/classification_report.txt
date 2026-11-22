@@ -1,9 +1,9 @@
                   precision    recall  f1-score   support
 
-denseresidential     0.9603    0.9680    0.9641       125
-          harbor     0.9841    0.9920    0.9880       125
-           river     0.9837    0.9680    0.9758       125
+denseresidential     0.9843    1.0000    0.9921       125
+          harbor     0.9920    0.9920    0.9920       125
+           river     1.0000    0.9840    0.9919       125
 
-        accuracy                         0.9760       375
-       macro avg     0.9761    0.9760    0.9760       375
-    weighted avg     0.9761    0.9760    0.9760       375
+        accuracy                         0.9920       375
+       macro avg     0.9921    0.9920    0.9920       375
+    weighted avg     0.9921    0.9920    0.9920       375

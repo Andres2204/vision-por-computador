@@ -7,17 +7,17 @@
     "river"
   ],
   "n_test": 375,
-  "accuracy": 0.976,
-  "precision_macro": 0.9760614272809395,
-  "recall_macro": 0.976,
-  "f1_macro": 0.975999228890888,
-  "f1_weighted": 0.9759992288908881,
-  "cohen_kappa": 0.964,
+  "accuracy": 0.992,
+  "precision_macro": 0.9920839895013124,
+  "recall_macro": 0.992,
+  "f1_macro": 0.99199965864482,
+  "f1_weighted": 0.99199965864482,
+  "cohen_kappa": 0.988,
   "confusion_matrix": [
     [
-      121,
-      2,
-      2
+      125,
+      0,
+      0
     ],
     [
       1,
@@ -25,50 +25,55 @@
       0
     ],
     [
-      4,
-      0,
-      121
+      1,
+      1,
+      123
     ]
   ],
   "per_class": {
     "denseresidential": {
-      "precision": 0.9603174603174603,
-      "recall": 0.968,
-      "f1": 0.9641434262948207,
+      "precision": 0.984251968503937,
+      "recall": 1.0,
+      "f1": 0.9920634920634921,
       "support": 125
     },
     "harbor": {
-      "precision": 0.9841269841269841,
+      "precision": 0.992,
       "recall": 0.992,
-      "f1": 0.9880478087649402,
+      "f1": 0.992,
       "support": 125
     },
     "river": {
-      "precision": 0.983739837398374,
-      "recall": 0.968,
-      "f1": 0.9758064516129032,
+      "precision": 1.0,
+      "recall": 0.984,
+      "f1": 0.9919354838709677,
       "support": 125
     }
   },
   "parameters": 305251,
   "trainable_parameters": 304355,
-  "training_seconds": 2062.72,
-  "inference_ms_per_image": 13.294,
-  "epochs": 29,
+  "training_seconds": 8338.9,
+  "inference_ms_per_image": 19.797,
+  "epochs": 100,
   "hyperparameters": {
     "filters": [
       32,
       64,
       128
     ],
+    "convs_per_block": 2,
     "optimizer": "Adam",
-    "lr": 0.001,
+    "lr": 0.0003,
+    "loss": "categorical_crossentropy",
+    "label_smoothing": 0.05,
     "batch_size": 32,
-    "epochs_max": 40,
-    "augmentation": true,
-    "dropout": 0.4,
-    "early_stopping": 8
+    "epochs_max": 100,
+    "early_stopping": "val_loss, patience=20",
+    "augmentation": "flip + rotation 0.05",
+    "class_weight": true,
+    "iteration": 2,
+    "rescaling": "1/255 inside the model"
   },
-  "notes": "CNN with BatchNorm, Dropout, GAP, augmentation and callbacks.",
-  "roc_auc_ovr_macro": 0.9990079999999999
+  "notes": "Improved CNN with the reto 1 v2 recipe: softer augmentation, lr 3e-4, label smoothing and early stopping on val_loss.",
+  "roc_auc_ovr_macro": 0.9993279999999999
 }

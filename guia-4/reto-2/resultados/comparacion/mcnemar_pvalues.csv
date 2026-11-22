@@ -1,5 +1,7 @@
-,CNN base,CNN mejorada,DenseNet121,Swin Transformer
-CNN base,1.0000,0.0000,0.0000,0.0000
-CNN mejorada,0.0000,1.0000,0.2266,0.5034
-DenseNet121,0.0000,0.2266,1.0000,0.0490
-Swin Transformer,0.0000,0.5034,0.0490,1.0000
+modelo_a,modelo_b,p_valor
+CNN base,CNN mejorada,0.0000
+CNN mejorada,DenseNet121,1.0000
+CNN base,DenseNet121,0.0000
+CNN mejorada,ViT-B/16 preentrenado,1.0000
+DenseNet121,ViT-B/16 preentrenado,0.6875
+CNN base,ViT-B/16 preentrenado,0.0000
