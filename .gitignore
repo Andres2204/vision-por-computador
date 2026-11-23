@@ -1,4 +1,5 @@
 /.venv
+/.venv310
 /guia-2/reto-6/Dataset500/
 /.venv311
 logs.log
@@ -8,7 +9,10 @@ sam_b.pt
 /**/retos
 /**/MASATI-v2
 /**/landuse-dataset/**
-guia-2/reto-5/3scenes/
+/**/SAR despeckling filters dataset
+/**/5_FilterAE.ipynb
+/**/model.h5
+/**/PruebaAutoencoder1500_100.ipynbguia-2/reto-5/3scenes/
 
 # copia suelta del dataset de 3 escenas en la raiz (ya esta en guia-2/reto-5/3scenes/)
 /coast/
