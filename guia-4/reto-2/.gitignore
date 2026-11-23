@@ -4,5 +4,3 @@ __pycache__/
 # pesos del ViT-B/16 ajustado (~345 MB): superan el limite de 100 MB de GitHub
 resultados/vit/model.weights.h5
 resultados/vit/model.pt
-# informe generado desde resultados/
-informe-reto-2.pdf
