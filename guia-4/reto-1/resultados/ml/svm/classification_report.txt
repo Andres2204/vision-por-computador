@@ -1,0 +1,9 @@
+              precision    recall  f1-score   support
+
+       coast     0.9255    0.9667    0.9457        90
+      forest     0.9647    1.0000    0.9820        82
+     highway     0.9836    0.8824    0.9302        68
+
+    accuracy                         0.9542       240
+   macro avg     0.9579    0.9497    0.9526       240
+weighted avg     0.9554    0.9542    0.9537       240
