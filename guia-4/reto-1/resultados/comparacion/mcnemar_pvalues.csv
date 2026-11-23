@@ -1,0 +1,12 @@
+modelo_a,modelo_b,p_valor
+CNN base,CNN mejorada,0.2005
+CNN mejorada,DenseNet121,0.0000
+CNN base,DenseNet121,0.0001
+CNN mejorada v2,CNN base,0.7011
+CNN mejorada v2,CNN mejorada,0.2668
+CNN mejorada v2,DenseNet121,0.0000
+ViT (desde cero),CNN mejorada v2,1.0000
+ViT (desde cero),DenseNet121,0.0000
+ViT preentrenado (ImageNet),ViT (desde cero),0.0001
+ViT preentrenado (ImageNet),DenseNet121,0.6875
+SVM (RBF),DenseNet121,0.0654

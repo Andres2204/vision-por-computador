@@ -1,0 +1,66 @@
+{
+  "name": "Regresión logística",
+  "family": "machine learning",
+  "classes": [
+    "coast",
+    "forest",
+    "highway"
+  ],
+  "n_test": 240,
+  "accuracy": 0.9416666666666667,
+  "precision_macro": 0.9450162185936555,
+  "recall_macro": 0.936165577342048,
+  "f1_macro": 0.9390743616287095,
+  "f1_weighted": 0.940846057625949,
+  "cohen_kappa": 0.9115975584087561,
+  "confusion_matrix": [
+    [
+      86,
+      2,
+      2
+    ],
+    [
+      0,
+      82,
+      0
+    ],
+    [
+      8,
+      2,
+      58
+    ]
+  ],
+  "per_class": {
+    "coast": {
+      "precision": 0.9148936170212766,
+      "recall": 0.9555555555555556,
+      "f1": 0.9347826086956522,
+      "support": 90
+    },
+    "forest": {
+      "precision": 0.9534883720930233,
+      "recall": 1.0,
+      "f1": 0.9761904761904762,
+      "support": 82
+    },
+    "highway": {
+      "precision": 0.9666666666666667,
+      "recall": 0.8529411764705882,
+      "f1": 0.90625,
+      "support": 68
+    }
+  },
+  "parameters": null,
+  "trainable_parameters": null,
+  "training_seconds": 0.46,
+  "inference_ms_per_image": 0.036,
+  "epochs": null,
+  "hyperparameters": {
+    "descriptor": "HSV histogram [8,8,8] + HOG(9, (16,16), (2,2))",
+    "classifier": "LogisticRegression",
+    "max_iter": 2000,
+    "scaling": "StandardScaler"
+  },
+  "notes": "Linear baseline on HSV+HOG descriptors inside a scaled pipeline.",
+  "roc_auc_ovr_macro": 0.9836356631773272
+}
