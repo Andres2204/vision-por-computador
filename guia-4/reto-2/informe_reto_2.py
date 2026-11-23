@@ -166,8 +166,9 @@ def fmt_p(p_value: float | None) -> str:
     return f"{p_value:.4f}".replace(".", ",")
 
 def fmt_p_html(p_value: float | None) -> str:
-    """Same as ``fmt_p`` but safe inside a reportlab Paragraph."""
-    return fmt_p(p_value).replace("<", "&lt;")
+    """'p = 0,0123' or 'p < 0,0001', safe inside a reportlab Paragraph."""
+    text = fmt_p(p_value)
+    return "p &lt; 0,0001" if text.startswith("<") else f"p = {text}"
 
 
 def verdict(p_value: float | None) -> str:
@@ -394,19 +395,20 @@ def build_report() -> Path:
     )
 
     story.append(Paragraph("Resumen ejecutivo", styles["H2es"]))
+    def tie(p_value: float | None) -> bool:
+        return p_value is None or p_value >= 0.05
+
+    top3 = ranking[:3]
+    top3_tied = all(
+        tie(pvalue(a["folder"], b["folder"])) for i, a in enumerate(top3) for b in top3[i + 1:]
+    )
     summary_bits = [
-        f"<b>Ganador:</b> {best['name']} con {pct(best['accuracy'])} de accuracy en test "
+        f"<b>Mejor modelo:</b> {best['name']}, con {pct(best['accuracy'])} de accuracy en test "
         f"({n_test} imágenes), F1 macro {pct(best['f1_macro'])} y kappa {number(best['cohen_kappa'], 3)}.",
-        f"Le sigue {second['name']} con {pct(second['accuracy'])}. La CNN base se queda en "
-        f"{pct(base['accuracy'])} y la CNN mejorada en {pct(improved['accuracy'])}.",
-        f"<b>Preentrenamiento:</b> DenseNet121 ({pct(densenet['accuracy'])}) y ViT "
-        f"({pct(vit['accuracy'])}) vuelven a quedar por delante de las CNN desde cero, como en el reto 1.",
-        f"<b>Atención frente a convolución:</b> ViT y DenseNet121 quedan a "
-        f"{num1(100 * (vit['accuracy'] - densenet['accuracy']))} puntos y su McNemar es "
-        f"p = {fmt_p_html(pvalue('vit', 'densenet'))} ({verdict(pvalue('vit', 'densenet'))}).",
-        f"<b>Continuidad:</b> el reto 2 no repite el ViT desde cero ni los modelos clásicos porque el "
-        "reto 1 ya demostró que no cambiaban la conclusión. La comparación se concentra en las cuatro "
-        "celdas útiles.",
+        f"Le siguen {ranking[1]['name']} ({pct(ranking[1]['accuracy'])}) y {ranking[2]['name']} "
+        f"({pct(ranking[2]['accuracy'])})"
+        + (", sin diferencias significativas entre los tres." if top3_tied else ".")
+        + f" La CNN base se queda en {pct(base['accuracy'])}.",
     ]
     for bit in summary_bits:
         story.append(Paragraph(f"• {bit}", styles["Body"]))
@@ -606,61 +608,40 @@ def build_report() -> Path:
     p_vit_improved = pvalue("vit", "cnn/mejorada")
     p_densenet_improved = pvalue("densenet", "cnn/mejorada")
     p_base_improved = pvalue("cnn/base", "cnn/mejorada")
-    p_base_vit = pvalue("cnn/base", "vit")
     gap_vit_densenet = 100 * (vit["accuracy"] - densenet["accuracy"])
-    gap_vit_improved = 100 * (vit["accuracy"] - improved["accuracy"])
-    gap_densenet_improved = 100 * (densenet["accuracy"] - improved["accuracy"])
     conclusions = [
-        f"<b>Ganador.</b> {best['name']} es el mejor modelo en test con {pct(best['accuracy'])} "
-        f"(IC 95 % {pct(best['ci'][0])}–{pct(best['ci'][1])}), F1 macro {pct(best['f1_macro'])} "
-        f"y kappa {number(best['cohen_kappa'], 3)}. Le sigue {second['name']} con "
-        f"{pct(second['accuracy'])}.",
-        f"<b>Preentrenamiento.</b> DenseNet121 ({pct(densenet['accuracy'])}) y ViT "
-        f"({pct(vit['accuracy'])}) superan a la CNN base ({pct(base['accuracy'])}; McNemar "
-        f"p = {fmt_p_html(p_base_vit)}) y a la CNN mejorada ({pct(improved['accuracy'])}; McNemar "
-        f"p = {fmt_p_html(p_vit_improved)} para ViT y p = {fmt_p_html(p_densenet_improved)} para DenseNet). "
-        "El salto grande lo da ImageNet, no la arquitectura.",
+        f"<b>El mejor modelo es {best['name']} ({pct(best['accuracy'])}).</b> "
+        + (
+            f"{ranking[1]['name']} ({pct(ranking[1]['accuracy'])}) y {ranking[2]['name']} "
+            f"({pct(ranking[2]['accuracy'])}) no se distinguen estadísticamente de él."
+            if top3_tied
+            else f"Le sigue {second['name']} con {pct(second['accuracy'])}."
+        ),
+        f"<b>La CNN mejorada {'alcanza a los preentrenados' if tie(p_vit_improved) and tie(p_densenet_improved) else 'no alcanza a los preentrenados'}.</b> "
+        f"Sube {num1(100 * (improved['accuracy'] - base['accuracy']))} puntos sobre la CNN base "
+        f"({fmt_p_html(p_base_improved)}) y frente al ViT y a DenseNet121 da "
+        f"{fmt_p_html(p_vit_improved)} y {fmt_p_html(p_densenet_improved)}. "
+        + (
+            "A diferencia del reto 1, en este dataset la receta v2 basta sin preentrenamiento."
+            if tie(p_vit_improved) and tie(p_densenet_improved)
+            else "Como en el reto 1, el preentrenamiento marca la diferencia."
+        ),
         f"<b>Atención frente a convolución.</b> ViT y DenseNet121 quedan a "
-        f"{num1(gap_vit_densenet)} puntos (McNemar p = {fmt_p_html(p_vit_densenet)}): con "
-        "preentrenamiento, la atención global no se separa de la convolución densa. Es la misma "
-        "lectura que en el reto 1, donde el empate fue p = 0,6875.",
-        f"<b>La CNN mejorada.</b> La receta v2 y el <font face='Courier'>Rescaling(1/255)</font> "
-        f"interno dejan la CNN en {pct(improved['accuracy'])}. Frente a la CNN base queda "
-        f"{num1(abs(100 * (improved['accuracy'] - base['accuracy'])))} puntos "
-        f"{'por encima' if improved['accuracy'] >= base['accuracy'] else 'por debajo'} "
-        f"(McNemar p = {fmt_p_html(p_base_improved)}), pero sigue por debajo de los preentrenados.",
-        f"<b>Coste y despliegue.</b> La CNN base es la más barata ({number(base['parameters'])} "
-        f"parámetros, {num1(base['inference_ms_per_image'])} ms/imagen). La CNN mejorada ofrece el "
-        f"mejor equilibrio precisión/coste ({number(improved['parameters'])} parámetros, "
-        f"{num1(improved['inference_ms_per_image'])} ms/imagen). DenseNet121 añade precisión con "
-        f"{number(densenet['parameters'])} parámetros y {num1(densenet['inference_ms_per_image'])} "
-        f"ms/imagen. El ViT es el más caro: {number(vit['parameters'])} parámetros y "
-        f"{num1(vit['inference_ms_per_image'])} ms/imagen en CPU.",
-        f"<b>Limitación y continuidad.</b> {n_total} imágenes en 3 clases y {n_test} de test: los "
-        "intervalos son más estrechos que en el reto 1, pero los p-valores no son directamente "
-        "comparables entre datasets. Aun así, el orden y las dos conclusiones principales se "
-        "mantienen: el preentrenamiento domina y atención frente a convolución queda en tablas.",
+        f"{num1(gap_vit_densenet)} puntos ({fmt_p_html(p_vit_densenet)}): "
+        + ("empatan, igual que en el reto 1." if tie(p_vit_densenet) else "la diferencia es significativa."),
+        f"<b>Coste.</b> La CNN mejorada usa {number(improved['parameters'])} parámetros y "
+        f"{num1(improved['inference_ms_per_image'])} ms por imagen; DenseNet121, "
+        f"{number(densenet['parameters'])} y {num1(densenet['inference_ms_per_image'])} ms; el ViT, "
+        f"{number(vit['parameters'])} y {num1(vit['inference_ms_per_image'])} ms. "
+        + (
+            "Con la misma accuracy estadística, la CNN mejorada es la opción más eficiente."
+            if tie(p_vit_improved) and tie(p_densenet_improved)
+            else "El ViT es el más caro de los cuatro."
+        ),
     ]
     for item in conclusions:
         story.append(Paragraph(f"• {item}", styles["Body"]))
 
-    story.append(Paragraph("Reproducibilidad", styles["H2es"]))
-    story.append(
-        Paragraph(
-            "Cada modelo queda en <font face='Courier'>resultados/&lt;modelo&gt;/</font> con sus "
-            "métricas, predicciones y pesos, y este informe se genera con "
-            "<font face='Courier'>python informe_reto_2.py</font> leyendo solo esos artefactos: "
-            "ninguna cifra está escrita a mano, así que al reentrenar un modelo el PDF se recalcula "
-            "solo. Orden de ejecución: <font face='Courier'>LandUseCNN.ipynb</font> → "
-            "<font face='Courier'>LandUseDenseNet.ipynb</font> → "
-            "<font face='Courier'>LandUseViT.ipynb</font> → "
-            "<font face='Courier'>reto-2.ipynb</font> → "
-            "<font face='Courier'>informe_reto_2.py</font>. Los pesos del ViT "
-            "(<font face='Courier'>resultados/vit/model.weights.h5</font>, ~345 MB) están ignorados "
-            "por git; en un clon nuevo se reentrena con <font face='Courier'>FORCE_RETRAIN = True</font>.",
-            styles["Body"],
-        )
-    )
 
     doc = SimpleDocTemplate(
         str(OUTPUT),
