@@ -236,7 +236,7 @@ def build_styles():
             leading=18,
             spaceBefore=2,
             spaceAfter=8,
-            textColor=colors.HexColor("#1a3a5c"),
+            textColor=colors.black,
         )
     )
     styles.add(
@@ -248,7 +248,7 @@ def build_styles():
             leading=14,
             spaceBefore=10,
             spaceAfter=5,
-            textColor=colors.HexColor("#1a3a5c"),
+            textColor=colors.black,
         )
     )
     styles.add(
@@ -259,7 +259,7 @@ def build_styles():
             fontSize=7.5,
             leading=9.5,
             alignment=1,
-            textColor=colors.HexColor("#444444"),
+            textColor=colors.black,
             spaceBefore=2,
             spaceAfter=10,
         )
@@ -267,7 +267,7 @@ def build_styles():
     return styles
 
 
-def table(data, widths, align_right_from: int = 1, header_bg="#1a3a5c", center: tuple = ()):
+def table(data, widths, align_right_from: int = 1, header_bg="#000000", center: tuple = ()):
     body = Table(data, colWidths=widths, repeatRows=1)
     style = [
         ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor(header_bg)),
@@ -281,8 +281,8 @@ def table(data, widths, align_right_from: int = 1, header_bg="#1a3a5c", center: 
     for column in center:
         style.append(("ALIGN", (column, 0), (column, -1), "CENTER"))
     style += [
-        ("GRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#999999")),
-        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#eef2f7")]),
+        ("GRID", (0, 0), (-1, -1), 0.25, colors.black),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white]),
         ("TOPPADDING", (0, 0), (-1, -1), 2),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
     ]
@@ -515,7 +515,7 @@ def build_report() -> Path:
     def footer(canvas, doc_):
         canvas.saveState()
         canvas.setFont("Helvetica", 7.5)
-        canvas.setFillColor(colors.HexColor("#666666"))
+        canvas.setFillColor(colors.black)
         canvas.drawString(2.2 * cm, 1.2 * cm, "Reto 1 — Clasificación de 3 escenas (coast / forest / highway)")
         canvas.drawRightString(A4[0] - 2.2 * cm, 1.2 * cm, f"Página {doc_.page}")
         canvas.restoreState()
