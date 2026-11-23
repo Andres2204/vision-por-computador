@@ -69,6 +69,8 @@ ARTIFACTS = {
     "report": "classification_report.txt",
     "model": "model.keras",
     "weights": "model.weights.h5",
+    # only the fine-tuned weights; the frozen rest is rebuilt from a public preset
+    "finetuned_weights": "finetuned.weights.npz",
     "sklearn_model": "model.joblib",
 }
 
@@ -499,7 +501,7 @@ def load_or_train(
     history = load_history(folder)
     has_artifact = any(
         (folder_path / ARTIFACTS[key]).exists()
-        for key in ("model", "weights", "sklearn_model")
+        for key in ("model", "weights", "finetuned_weights", "sklearn_model")
     )
 
     if not force and metrics is not None and has_artifact:

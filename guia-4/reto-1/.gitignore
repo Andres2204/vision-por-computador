@@ -2,7 +2,8 @@ __pycache__/
 *.pyc
 .ipynb_checkpoints/
 informe-reto-1.pdf
-# pesos del ViT-B/16 ajustado (~345 MB): superan el limite de 100 MB de GitHub
+# modelo ViT-B/16 completo (~450 MB, versiones antiguas del cuaderno): se versiona
+# solo finetuned.weights.npz, el resto se reconstruye desde el preset de ImageNet
 resultados/vit_preentrenado/model.weights.h5
 # el ViT desde cero se recarga desde model.weights.h5; model.keras (58 MB) es redundante
 resultados/vit/model.keras

@@ -60,10 +60,14 @@ compara atención y convolución a igualdad de preentrenamiento. Notas:
 * `keras-hub` se instala con `--no-deps` (`pip install --no-deps keras-hub
   kagglehub kagglesdk regex tqdm`) para que pip no baje la versión de `keras`
   del entorno. La primera ejecución descarga ~345 MB de pesos desde Kaggle.
-* Sus pesos ajustados (`resultados/vit_preentrenado/model.weights.h5`,
-  ~345 MB) superan el límite de 100 MB por archivo de GitHub y están
-  **ignorados por git**: el repositorio guarda métricas, predicciones e
-  historia, y en un clon nuevo el cuaderno reentrena el modelo.
+* El modelo completo ajustado (~450 MB) supera el límite de 100 MB por archivo
+  de GitHub, así que solo se guarda lo que el ajuste cambió: la cabeza, los 2
+  últimos bloques y la `LayerNormalization` final
+  (`resultados/vit_preentrenado/finetuned.weights.npz`, ~14 M parámetros,
+  ~57 MB). El resto del ViT nunca se entrenó y es idéntico al preset, así que
+  el cuaderno lo reconstruye desde ImageNet y le aplica esos pesos: en un clon
+  nuevo se recupera el mismo modelo (las mismas 240 predicciones del test) sin
+  reentrenar.
 
 ## Dataset
 
@@ -115,7 +119,7 @@ resultados/
 │   └── mejorada_v2/
 ├── densenet/            # incluye gradcam.png
 ├── vit/                 # incluye model.weights.h5 + ejemplos_prediccion.png
-├── vit_preentrenado/    # model.weights.h5 solo en local (~345 MB, ignorado por git)
+├── vit_preentrenado/    # finetuned.weights.npz: solo los pesos ajustados (~57 MB)
 ├── ml/
 │   ├── logreg/          # model.joblib, sin history.csv
 │   ├── svm/
