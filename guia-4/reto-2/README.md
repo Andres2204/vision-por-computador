@@ -71,18 +71,19 @@ empate atención/convolución se mantiene en un dataset distinto.
 
 | Modelo | Familia | Accuracy | F1 macro | κ | ROC-AUC | Parámetros | Entreno (s) |
 |---|---|---:|---:|---:|---:|---:|---:|
-| CNN base | CNN | 87,73 % | 87,55 % | 0,816 | 0,9842 | 30.611 | 76,03 |
-| CNN mejorada (v2) | CNN | 97,60 % | 97,60 % | 0,964 | 0,9990 | 305.251 | 2.062,72 |
+| CNN base | CNN | 89,33 % | 89,24 % | 0,840 | 0,9857 | 30.611 | 110,64 |
+| CNN mejorada (v2) | CNN | 99,20 % | 99,20 % | 0,988 | 0,9993 | 305.251 | 8.338,90 |
 | DenseNet121 | DL no secuencial | 98,93 % | 98,93 % | 0,984 | 0,9996 | 7.040.579 | 697,87 |
-| ViT-B/16 | IA generativa (Transformer) | **99,73 %** | **99,73 %** | 0,996 | 1,0000 | 85.800.963 | 3.362,89 |
+| ViT-B/16 | IA generativa (Transformer) | **99,47 %** | **99,47 %** | 0,992 | 1,0000 | 85.800.963 | 6.115,07 |
 
-El **ViT-B/16 preentrenado** obtiene la mejor accuracy (99,73 %), pero el test
-exacto de McNemar no lo separa de DenseNet121 (p = 0,3750): como en el reto 1,
-atención y convolución quedan empatadas. Ambas superan de forma significativa a
-las CNN desde cero (p = 0,0000 frente a CNN base). La CNN mejorada v2 ya se
-acerca a DenseNet121 (p = 0,2266), mientras que frente a ViT sí hay diferencia
-(p = 0,0215). El detalle por clase y los intervalos de confianza por bootstrap
-están en `resultados/comparacion/`.
+El **ViT-B/16 preentrenado** obtiene la mejor accuracy (99,47 %), seguido de la
+CNN mejorada (99,20 %) y DenseNet121 (98,93 %). El test exacto de McNemar indica
+que las diferencias entre estos tres modelos están dentro del ruido
+(ViT frente a DenseNet121 p = 0,6875; ViT frente a la CNN mejorada p = 1,0000;
+DenseNet121 frente a la CNN mejorada p = 1,0000). La CNN base sí queda
+significativamente por debajo (p = 0,0000 frente a los demás). El detalle por
+clase y los intervalos de confianza por bootstrap están en
+`resultados/comparacion/`.
 
 El análisis completo, las cuatro figuras y las conclusiones generadas desde
 `resultados/` están en `reto-2.ipynb` y en `resultados/comparacion/`.
